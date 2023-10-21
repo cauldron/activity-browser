@@ -5,7 +5,7 @@ import textwrap
 
 import arrow
 import brightway2 as bw
-from bw2data import databases
+from bw2data import databases, get_node, Database, methods
 from bw2data.proxies import ActivityProxyBase
 from bw2data.project import ProjectDataset, SubstitutableDatabase
 
@@ -37,7 +37,7 @@ def wrap_text(string: str, max_length: int = 80) -> str:
 
 def format_activity_label(key, style='pnl', max_length=40):
     try:
-        act = bw.get_activity(key)
+        act = get_node(database=key[0], code=key[1])
 
         if style == 'pnl':
             label = '\n'.join([act.get('reference product', ''), act.get('name', ''),
@@ -67,6 +67,7 @@ def format_activity_label(key, style='pnl', max_length=40):
     return wrap_text(label, max_length=max_length)
 
 
+# BW25: incorporate
 # Switch brightway directory
 def switch_brightway2_dir(dirpath):
     bw_base = bw.projects._base_data_dir
@@ -92,6 +93,7 @@ def switch_brightway2_dir(dirpath):
         return False
 
 
+# BW25: delete
 def cleanup_deleted_bw_projects() -> None:
     """Clean up the deleted projects from disk.
 
@@ -116,29 +118,20 @@ def get_database_metadata(name):
 
 def is_technosphere_db(db_name: str) -> bool:
     """Returns True if database describes the technosphere, False if it describes a biosphere."""
-    if not db_name in bw.databases:
+    if db_name not in databases:
         raise KeyError("Not an existing database:", db_name)
-    act = bw.Database(db_name).random()
+    act = Database(db_name).random()
     if act is None or act.get("type", "process") == "process":
         return True
     else:
         return False
 
 
-def is_technosphere_activity(activity: ActivityProxyBase) -> bool:
-    """ Avoid database lookups by testing the activity for a type, calls the
-    above method if the field does not exist.
-    """
-    if "type" not in activity:
-        return is_technosphere_db(activity.key[0])
-    return activity.get("type") == "process"
-
-
 def count_database_records(name: str) -> int:
     """To account for possible brightway database types that do not implement
     the __len__ method.
     """
-    db = bw.Database(name)
+    db = Database(name)
     try:
         return len(db)
     except TypeError as e:
@@ -205,7 +198,7 @@ def build_activity_group_name(key: tuple, name: str = None) -> str:
     simple_hash = hashlib.md5(":".join(key).encode()).hexdigest()
     if name:
         return "{}_{}".format(name, simple_hash)
-    act = bw.get_activity(key)
+    act = get_node(database=key[0], code=key[1])
     clean = clean_activity_name(act.get("name"))
     return "{}_{}".format(clean, simple_hash)
 
@@ -233,8 +226,8 @@ def get_exchanges_in_scenario_difference_file_notation(exchanges):
     data = []
     for exc in exchanges:
         try:
-            from_act = bw.get_activity(exc.get('input'))
-            to_act = bw.get_activity(exc.get('output'))
+            from_act = get_node(database=exc.get('input')[0], code=exc.get('input')[1])
+            to_act = get_node(database=exc.get('output')[0], code=exc.get('output')[1])
 
             row = {
                 'from activity name': from_act.get('name', ''),
@@ -274,8 +267,8 @@ def get_exchanges_from_a_list_of_activities(activities: list, as_keys: bool = Fa
 # LCIA
 def unit_of_method(method: tuple) -> str:
     """Attempt to return the unit of the given method."""
-    assert method in bw.methods
-    return bw.methods[method].get("unit", "unit")
+    assert method in methods
+    return methods[method].get("unit", "unit")
 
 
 def get_LCIA_method_name_dict(keys: list) -> dict:
