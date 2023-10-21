@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from PySide2 import QtWidgets
 
-from bw2data.filesystem import safe_filename
+from bw_processing import safe_filename
 
 from .settings import ab_settings
 

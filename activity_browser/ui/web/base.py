@@ -7,7 +7,7 @@ from typing import Type
 
 from PySide2 import QtWebEngineWidgets, QtWebChannel, QtWidgets
 from PySide2.QtCore import Signal, Slot, QObject, Qt, QUrl
-from bw2data.filesystem import safe_filename
+from bw_processing import safe_filename
 
 from . import webutils
 from ... import utils

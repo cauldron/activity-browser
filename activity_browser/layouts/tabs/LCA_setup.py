@@ -8,7 +8,6 @@ import pandas as pd
 import re
 
 import brightway2 as bw
-from bw2data.filesystem import safe_filename
 from ...bwutils.superstructure import (
     SuperstructureManager, import_from_excel, scenario_names_from_df,
     SUPERSTRUCTURE, _time_it_, ABCSVImporter, ABFeatherImporter,

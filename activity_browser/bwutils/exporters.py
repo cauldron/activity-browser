@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Union
 
 import brightway2 as bw
-from bw2data.utils import safe_filename
+from bw_processing import safe_filename
 from bw2io.export.excel import CSVFormatter, create_valid_worksheet_name
 from bw2io.export.csv import reformat
 import xlsxwriter
@@ -79,7 +79,7 @@ def write_lci_excel(db_name: str, path: str, objs=None, sections=None) -> Path:
     """
     path = Path(path)
     if not path.suffix == ".xlsx":
-        out_file = path / "lci-{}.xlsx".format(safe_filename(db_name, False))
+        out_file = path / "lci-{}.xlsx".format(safe_filename(db_name, add_hash=False))
     else:
         out_file = path
 
