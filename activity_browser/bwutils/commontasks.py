@@ -256,7 +256,7 @@ def get_exchanges_in_scenario_difference_file_notation(exchanges):
 def get_exchanges_from_a_list_of_activities(activities: list, as_keys: bool = False) -> list:
     """Get all exchanges in a list of activities."""
     if as_keys:
-        activities = [bw.get_activity(key) for key in activities]
+        activities = [get_node(database=key[0], code=key[1]) for key in activities]
     exchanges = []
     for act in activities:
         for exc in act.exchanges():

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
+from bw2data import get_node
 from bw2data.errors import UnknownObject
 from bw2data.backends.peewee import ActivityDataset
 import pandas as pd
@@ -115,7 +116,7 @@ class MetaDataStore(object):
             The specific activity to update in the MetaDataStore
         """
         try:
-            act = bw.get_activity(key)  # if this does not work, it has been deleted (see except:).
+            act = get_node(database=key[0], code=key[1])  # if this does not work, it has been deleted (see except:).
         except (UnknownObject, ActivityDataset.DoesNotExist):
             # Situation 1: activity has been deleted (metadata needs to be deleted)
             log.warning('Deleting activity from metadata:', key)

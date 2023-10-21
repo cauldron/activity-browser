@@ -2,6 +2,7 @@
 from typing import List, Optional, Union
 
 import brightway2 as bw
+from bw2data import get_node
 from bw2data.parameters import ActivityParameter, Group, ParameterBase
 from PySide2.QtCore import QObject, Slot
 from PySide2.QtWidgets import QInputDialog, QMessageBox, QErrorMessage
@@ -61,7 +62,7 @@ class ParameterController(QObject):
         """ Given the activity key, generate a new row with data from
         the activity and immediately call `new_activity_parameters`.
         """
-        act = bw.get_activity(key)
+        act = get_node(database=key[0], code=key[1])
         prep_name = bc.clean_activity_name(act.get("name"))
         group = bc.build_activity_group_name(key, prep_name)
         count = (ActivityParameter.select()
@@ -85,7 +86,7 @@ class ParameterController(QObject):
         warning = "Activity must be 'process' type, '{}' is type '{}'."
         signals.blockSignals(True)
         for key in keys:
-            act = bw.get_activity(key)
+            act = get_node(database=key[0], code=key[1])
             if act.get("type", "process") != "process":
                 issue = warning.format(act.get("name"), act.get("type"))
                 QMessageBox.warning(

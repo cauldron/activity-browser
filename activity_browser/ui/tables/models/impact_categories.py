@@ -5,6 +5,7 @@ from typing import Iterator, Optional
 
 
 import brightway2 as bw
+from bw2data import get_node
 import numpy as np
 import pandas as pd
 from PySide2.QtCore import QModelIndex, Qt, Slot
@@ -342,7 +343,7 @@ class MethodCharacterizationFactorsModel(EditablePandasModel):
     @classmethod
     def build_row(cls, method_cf: tuple) -> dict:
         key, amount = method_cf[:2]
-        flow = bw.get_activity(key)
+        flow = get_node(database=key[0], code=key[1])
         row = {
             cls.HEADERS[i]: flow.get(c) for i, c in enumerate(cls.COLUMNS)
         }

@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 import brightway2 as bw
 from bw2calc.utils import get_seed
+from bw2data import get_node
 import numpy as np
 import pandas as pd
 from stats_arrays import MCRandomNumberGenerator
@@ -310,7 +311,7 @@ class MonteCarloLCA(object):
                    max_length: int = None) -> list:
         fields = fields or ['name', 'reference product', 'location', 'database']
         # need to do this as the keys come from a pd.Multiindex
-        acts = (bw.get_activity(key).as_dict() for key in (k for k in key_list))
+        acts = (get_node(database=key[0], code=key[1]).as_dict() for key in (k for k in key_list))
         translated_keys = [
             separator.join([act.get(field, '') for field in fields])
             for act in acts

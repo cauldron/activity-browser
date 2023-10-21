@@ -9,6 +9,7 @@ import brightway2 as bw
 import networkx as nx
 from PySide2 import QtWidgets
 from PySide2.QtCore import Slot
+from bw2data import get_node
 
 from .base import BaseGraph, BaseNavigatorWidget
 from ...signals import signals
@@ -253,7 +254,7 @@ class Graph(BaseGraph):
     @staticmethod
     def upstream_and_downstream_nodes(key: tuple) -> (list, list):
         """Returns the upstream and downstream activity objects for a key. """
-        activity = bw.get_activity(key)
+        activity = get_node(database=key[0], code=key[1])
         upstream_nodes = [ex.input for ex in activity.technosphere()]
         downstream_nodes = [ex.output for ex in activity.upstream()]
         return upstream_nodes, downstream_nodes
@@ -264,7 +265,7 @@ class Graph(BaseGraph):
 
         act.upstream refers to downstream exchanges; brightway is confused here)
         """
-        activity = bw.get_activity(key)
+        activity = get_node(database=key[0], code=key[1])
         return [ex for ex in activity.technosphere()], [ex for ex in activity.upstream()]
 
     @staticmethod
@@ -291,7 +292,7 @@ class Graph(BaseGraph):
         Returns:
                 JSON data as a string
         """
-        self.central_activity = bw.get_activity(key)
+        self.central_activity = get_node(database=key[0], code=key[1])
 
         # add nodes
         up_nodes, down_nodes = Graph.upstream_and_downstream_nodes(key)
@@ -340,7 +341,7 @@ class Graph(BaseGraph):
         if key == self.central_activity.key:
             log.warning("Cannot remove central activity.")
             return
-        act = bw.get_activity(key)
+        act = get_node(database=key[0], code=key[1])
         self.nodes.remove(act)
         if self.direct_only:
             self.remove_outside_exchanges()
@@ -381,7 +382,7 @@ class Graph(BaseGraph):
 
         count = 1
         for count, key in enumerate(orphaned_node_ids, 1):
-            act = bw.get_activity(key)
+            act = get_node(database=key[0], code=key[1])
             log.info(act["name"], act["location"])
             self.nodes.remove(act)
         log.info("\nRemoved ORPHANED nodes:", count)

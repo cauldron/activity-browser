@@ -3,6 +3,7 @@ import brightway2 as bw
 from peewee import DoesNotExist
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
+from bw2data import get_node
 
 from ...ui.icons import qicons
 from ...ui.style import style_activity_tab
@@ -35,7 +36,7 @@ class ActivitiesTab(ABTab):
     def open_activity_tab(self, key: tuple, read_only: bool = True) -> None:
         """Opens new tab or focuses on already open one."""
         if key not in self.tabs:
-            act = bw.get_activity(key)
+            act = get_node(database=key[0], code=key[1])
             if not act.get("type", "process") == "process":
                 return
             new_tab = ActivityTab(key, read_only=read_only)
@@ -50,7 +51,7 @@ class ActivitiesTab(ABTab):
             self.addTab(new_tab, bc.get_activity_name(act, str_length=30))
 
             # hovering on the tab shows the full name, in case it's truncated in the tabbar at the top
-            # new_tab.setToolTip(bw.get_activity(key).as_dict()['name'])
+            # new_tab.setToolTip(get_node(database=key[0], code=key[1]).as_dict()['name'])
 
         self.select_tab(self.tabs[key])
         signals.show_tab.emit("Activity Details")
@@ -95,7 +96,7 @@ class ActivityTab(QtWidgets.QWidget):
         self.db_read_only = project_settings.db_is_readonly(db_name=key[0])
         self.key = key
         self.db_name = key[0]
-        self.activity = bw.get_activity(key)
+        self.activity = get_node(database=key[0], code=key[1])
 
         # Edit Activity checkbox
         self.checkbox_edit_act = QtWidgets.QCheckBox('Edit Activity')

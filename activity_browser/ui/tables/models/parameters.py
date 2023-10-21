@@ -5,6 +5,7 @@ from typing import Iterable
 from asteval import Interpreter
 import brightway2 as bw
 import pandas as pd
+from bw2data import get_node
 from bw2data.parameters import (ActivityParameter, DatabaseParameter, Group,
                                 ProjectParameter)
 from peewee import DoesNotExist
@@ -427,7 +428,7 @@ class ParameterTreeModel(BaseTreeModel):
                 .where(ActivityParameter.group == group).count()):
             signals.add_activity_parameter.emit(key)
 
-        act = bw.get_activity(key)
+        act = get_node(database=key[0], code=key[1])
         with bw.parameters.db.atomic():
             bw.parameters.remove_exchanges_from_group(group, act)
             bw.parameters.add_exchanges_to_group(group, act)

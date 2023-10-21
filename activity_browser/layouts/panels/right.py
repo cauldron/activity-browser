@@ -3,6 +3,7 @@ from pathlib import Path
 
 import brightway2 as bw
 from PySide2.QtWidgets import QVBoxLayout
+from bw2data import get_node
 
 from .panel import ABTab
 from ...ui.web import GraphNavigatorWidget, RestrictedWebViewWidget
@@ -86,7 +87,7 @@ class GraphExplorerTab(ABTab):
             log.info("adding graph tab")
             new_tab = GraphNavigatorWidget(self, key=key)
             self.tabs[key] = new_tab
-            self.addTab(new_tab, get_activity_name(bw.get_activity(key), str_length=30))
+            self.addTab(new_tab, get_activity_name(get_node(database=key[0], code=key[1]), str_length=30))
         else:
             tab = self.tabs[key]
             tab.new_graph(key)

@@ -3,6 +3,7 @@ from typing import Iterator, Optional, Union
 import uuid
 
 import brightway2 as bw
+from bw2data import get_node
 from bw2data.backends.peewee.proxies import Activity, ExchangeProxyBase
 from PySide2.QtCore import QObject, Slot, Qt
 from PySide2 import QtWidgets
@@ -326,7 +327,7 @@ class ActivityController(QObject):
     @staticmethod
     @Slot(tuple, str, object, name="modifyActivity")
     def modify_activity(key: tuple, field: str, value: object) -> None:
-        activity = bw.get_activity(key)
+        activity = get_node(database=key[0], code=key[1])
         activity[field] = value
         activity.save()
         bw.databases.set_modified(key[0])

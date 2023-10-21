@@ -3,6 +3,7 @@ from typing import Iterable
 
 import brightway2 as bw
 from bw2data.backends.peewee import ActivityDataset
+from bw2data import get_node
 import pandas as pd
 import numpy as np
 from PySide2.QtCore import QModelIndex, Slot, Qt
@@ -126,7 +127,7 @@ class CSActivityModel(CSGenericModel):
 
     def build_row(self, key: tuple, amount: float = 1.0) -> dict:
         try:
-            act = bw.get_activity(key)
+            act = get_node(database=key[0], code=key[1])
             if act.get("type", "process") != "process":
                 raise TypeError("Activity is not of type 'process'")
             row = {
