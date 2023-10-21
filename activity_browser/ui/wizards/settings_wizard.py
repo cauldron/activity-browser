@@ -6,7 +6,6 @@ import re
 import brightway2 as bw
 from PySide2 import QtCore, QtWidgets
 
-from activity_browser.bwutils import commontasks as bc
 from activity_browser.logger import ABHandler
 
 from ...settings import ab_settings

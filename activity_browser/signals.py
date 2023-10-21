@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PySide2.QtCore import QModelIndex, QObject, Signal
+from PySide2.QtCore import QObject, Signal
 
 
 class Signals(QObject):

@@ -2,7 +2,7 @@
 import logging
 
 from bw2calc.errors import BW2CalcError
-from PySide2.QtWidgets import QApplication, QMessageBox
+from PySide2.QtWidgets import QApplication
 
 from activity_browser.logger import ABHandler
 

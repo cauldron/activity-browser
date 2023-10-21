@@ -4,7 +4,7 @@ import warnings
 from pathlib import Path
 
 import brightway2 as bw
-from bw2io import CSVImporter, ExcelImporter
+from bw2io import ExcelImporter
 from bw2io.errors import InvalidPackage, StrategyError
 from bw2io.strategies import (
     assign_only_product_as_production,

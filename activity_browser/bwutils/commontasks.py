@@ -8,7 +8,6 @@ import arrow
 import brightway2 as bw
 from bw2data import Database, databases, get_node, methods
 from bw2data.project import ProjectDataset, SubstitutableDatabase
-from bw2data.proxies import ActivityProxyBase
 
 from activity_browser.logger import ABHandler
 
