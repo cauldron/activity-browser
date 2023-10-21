@@ -4,7 +4,7 @@ from datetime import datetime as dt
 from pathlib import Path
 from typing import Union
 
-import brightway2 as bw
+from bw2data import databases, Database, projects
 import xlsxwriter
 from bw2io.export.csv import reformat
 from bw2io.export.excel import CSVFormatter, create_valid_worksheet_name
@@ -126,15 +126,15 @@ def write_lci_excel(db_name: str, path: str, objs=None, sections=None) -> Path:
 
 
 def store_database_as_package(db_name: str, directory: str = None) -> bool:
-    """Attempt to use `bw.BW2Package` to save the given database as an
+    """Attempt to use `BW2Package` to save the given database as an
     isolated package that can be shared with others.
     Returns a boolean signifying success or failure.
     """
-    if db_name not in bw.databases:
+    if db_name not in databases:
         return False
-    metadata = bw.databases[db_name]
-    db = bw.Database(db_name)
-    directory = directory or bw.projects.output_dir
+    metadata = databases[db_name]
+    db = Database(db_name)
+    directory = directory or projects.output_dir
     output_dir = Path(directory)
     if output_dir.suffix == ".bw2package":
         out_file = output_dir
