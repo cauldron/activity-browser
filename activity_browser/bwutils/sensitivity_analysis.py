@@ -12,6 +12,7 @@ import traceback
 from time import time
 
 import brightway2 as bw
+import bw2calc as bc
 import numpy as np
 import pandas as pd
 from SALib.analyze import delta
@@ -27,7 +28,7 @@ log = ABHandler.setup_with_logger(logger, __name__)
 
 def get_lca(fu, method):
     """Calculates a non-stochastic LCA and returns a the LCA object."""
-    lca = bw.LCA(fu, method=method)
+    lca = bc.LCA(fu, method=method)
     lca.lci()
     lca.lcia()
     log.info("Non-stochastic LCA score:", lca.score)
@@ -86,6 +87,7 @@ def filter_biosphere_exchanges(lca, cutoff=0.005):
     return biosphere_exchange_indices
 
 
+# BW25: adapt
 def get_exchanges(lca, indices, biosphere=False, only_uncertain=True):
     """Get actual exchange objects from indices.
     By default get only exchanges that have uncertainties.
