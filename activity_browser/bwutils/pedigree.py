@@ -12,6 +12,7 @@ In turn, this CV can then be used to generate required values for a number of ot
 Any additions made should improve the transition of the calculated sigma (or Geometric Standard Deviation/GSD)
 smoothly into the related uncertainty distributions.
 """
+from pprint import pformat
 import math
 
 from bw2data.parameters import ParameterBase
