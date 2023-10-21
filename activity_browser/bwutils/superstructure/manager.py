@@ -1,31 +1,38 @@
 # -*- coding: utf-8 -*-
 import itertools
-from typing import List
-import numpy as np
-import pandas as pd
-from pandas.api.types import is_numeric_dtype, is_number
-from PySide2.QtWidgets import QApplication, QPushButton
-from PySide2.QtCore import Qt
-from typing import Union, Optional
+import logging
+from typing import List, Optional, Union
 
 import brightway2 as bw
+import numpy as np
+import pandas as pd
+from pandas.api.types import is_number, is_numeric_dtype
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QApplication, QPushButton
+
+from activity_browser.logger import ABHandler
 
 from .activities import fill_df_keys_with_fields, get_activities_from_keys
 from .dataframe import scenario_columns
-from .utils import guess_flow_type, SUPERSTRUCTURE, _time_it_, edit_superstructure_for_string
+from .utils import (
+    SUPERSTRUCTURE,
+    _time_it_,
+    edit_superstructure_for_string,
+    guess_flow_type,
+)
 
-import logging
-from activity_browser.logger import ABHandler
-
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
+from ..errors import (
+    CriticalScenarioExtensionError,
+    ImportCanceledError,
+    ScenarioExchangeDataNonNumericError,
+    ScenarioExchangeDataNotFoundError,
+    ScenarioExchangeNotFoundError,
+    UnalignableScenarioColumnsWarning,
+)
 from .file_dialogs import ABPopup
-from ..errors import (CriticalScenarioExtensionError, ScenarioExchangeNotFoundError,
-                      ImportCanceledError, ScenarioExchangeDataNotFoundError,
-                        UnalignableScenarioColumnsWarning, ScenarioExchangeDataNonNumericError
-                      )
-
 
 EXCHANGE_KEYS = pd.Index(["from key", "to key"])
 INDEX_KEYS = pd.Index(["from key", "to key", "flow type"])
@@ -33,6 +40,7 @@ INDEX_KEYS = pd.Index(["from key", "to key", "flow type"])
 
 class SuperstructureManager(object):
     """A combination of methods used to manipulate and transform superstructures."""
+
     def __init__(self, df: pd.DataFrame, *dfs: pd.DataFrame):
         # Prepare dataframes for further processing
         self.frames: List[pd.DataFrame] = [
@@ -40,7 +48,9 @@ class SuperstructureManager(object):
         ] + [SuperstructureManager.format_dataframe(f) for f in dfs]
         self.is_multiple = len(self.frames) > 1
 
-    def combined_data(self, kind: str = "product", skip_checks: bool = False) -> pd.DataFrame:
+    def combined_data(
+        self, kind: str = "product", skip_checks: bool = False
+    ) -> pd.DataFrame:
         """
         Combines multiple superstructures using logic specified by the first argument (kind).
 
@@ -72,9 +82,7 @@ class SuperstructureManager(object):
             cols = scenario_columns(df)
             SuperstructureManager.check_scenario_exchange_values(df, cols)
             df = SuperstructureManager.merge_flows_to_self(df)
-            return pd.DataFrame(
-                data=df.loc[:, cols], index=df.index, columns=cols
-            )
+            return pd.DataFrame(data=df.loc[:, cols], index=df.index, columns=cols)
         combo_idx = self._combine_indexes()
 
         if kind == "product":
@@ -95,9 +103,7 @@ class SuperstructureManager(object):
         else:
             df = pd.DataFrame([], index=combo_idx)
         cols = scenario_columns(df)
-        return pd.DataFrame(
-            data=df.loc[:, cols], index=df.index, columns=cols
-        )
+        return pd.DataFrame(data=df.loc[:, cols], index=df.index, columns=cols)
 
     def _combine_columns(self) -> pd.MultiIndex:
         """
@@ -125,18 +131,28 @@ class SuperstructureManager(object):
             absent.update(cols.symmetric_difference(scenario_columns(df)))
             cols = cols.intersection(scenario_columns(df))
             for name in absent:
-                log.warning("The following scenario is not found in all provided files and is being dropped: {}".format(name))
+                log.warning(
+                    "The following scenario is not found in all provided files and is being dropped: {}".format(
+                        name
+                    )
+                )
         if cols.empty:
             msg = "While attempting to combine the scenario files an error was detected. No scenario columns were found in common between the files. For combining scenarios by extension at least one scenario needs to be found in common."
-            critical = ABPopup.abCritical("Combining scenario files.", msg, QPushButton('Cancel'))
+            critical = ABPopup.abCritical(
+                "Combining scenario files.", msg, QPushButton("Cancel")
+            )
             critical.exec_()
             raise CriticalScenarioExtensionError
         elif len(absent) > 0:
-            msg = "<p>While importing the scenario difference files one, or more, of the scenarios could not be found " \
-                  "between the files.</p> In these circumstances the Activity-Browser will only retain those " \
-                  "scenarios found in common between these files. If some desired scenarios are not included, then " \
-                  "please inspect your scenario files for the relevant columns."
-            warning = ABPopup.abWarning("Scenarios being dropped", msg, QPushButton('Ok'), QPushButton('Cancel'))
+            msg = (
+                "<p>While importing the scenario difference files one, or more, of the scenarios could not be found "
+                "between the files.</p> In these circumstances the Activity-Browser will only retain those "
+                "scenarios found in common between these files. If some desired scenarios are not included, then "
+                "please inspect your scenario files for the relevant columns."
+            )
+            warning = ABPopup.abWarning(
+                "Scenarios being dropped", msg, QPushButton("Ok"), QPushButton("Cancel")
+            )
             warning.dataframe(pd.DataFrame({"Scenarios": list(absent)}), ["Scenarios"])
             response = warning.exec_()
             if response == warning.Rejected:
@@ -152,7 +168,12 @@ class SuperstructureManager(object):
         return idx
 
     @staticmethod
-    def product_combine_frames(data: List[pd.DataFrame], index: pd.MultiIndex, cols: pd.MultiIndex, skip_checks: bool = False) -> pd.DataFrame:
+    def product_combine_frames(
+        data: List[pd.DataFrame],
+        index: pd.MultiIndex,
+        cols: pd.MultiIndex,
+        skip_checks: bool = False,
+    ) -> pd.DataFrame:
         """Iterate through the dataframes, filling data into the combined
         dataframe with duplicate indexes being resolved using a 'last one wins'
         logic.
@@ -169,20 +190,24 @@ class SuperstructureManager(object):
         -------
         A pandas dataframe constructed from the combined inputs to the class self.frames variable
         """
+
         def combine(one, two):
-            """ Should hopefully provide a failsafe approach to combining the different scenario combinations,
+            """Should hopefully provide a failsafe approach to combining the different scenario combinations,
             by using a simple vector - vector assignment approach.
             """
             for col_two in SUPERSTRUCTURE.symmetric_difference(two.columns):
                 for idx in one.columns:
                     if col_two in set(idx):
                         one.loc[two.index, idx] = two.loc[:, col_two]
+
         base_scenario_data = pd.DataFrame([], index=index, columns=SUPERSTRUCTURE)
         scenarios_data = pd.DataFrame([], index=index, columns=cols)
         if not skip_checks:
             tmp_df = SuperstructureManager.check_duplicates(data)
             for idx, f in enumerate(tmp_df):
-                SuperstructureManager.check_scenario_exchange_values(f, scenario_columns(f))
+                SuperstructureManager.check_scenario_exchange_values(
+                    f, scenario_columns(f)
+                )
                 combine(scenarios_data, f)
                 base_scenario_data.loc[f.index, :] = f.loc[:, SUPERSTRUCTURE]
         else:
@@ -194,11 +219,16 @@ class SuperstructureManager(object):
         scenarios_data.columns = cols.to_flat_index()
         df = pd.concat([base_scenario_data, scenarios_data], axis=1)
         df = SuperstructureManager.merge_flows_to_self(df)
-#        df.replace(np.nan, 0, inplace=True)
+        #        df.replace(np.nan, 0, inplace=True)
         return df
 
     @staticmethod
-    def addition_combine_frames(data: List[pd.DataFrame], index: pd.MultiIndex, cols: pd.Index, skip_checks: bool = False) -> pd.DataFrame:
+    def addition_combine_frames(
+        data: List[pd.DataFrame],
+        index: pd.MultiIndex,
+        cols: pd.Index,
+        skip_checks: bool = False,
+    ) -> pd.DataFrame:
         """
         Iterates through the combined dataframes to produce a single merged dataframe where duplicates are resolved
         with a "last one wins" approach
@@ -214,7 +244,7 @@ class SuperstructureManager(object):
         -------
         A pandas dataframe constructed from the combined inputs to the class self.frames variable
         """
-#        columns = data.columns if isinstance(data, pd.DataFrame) else data[0].columns
+        #        columns = data.columns if isinstance(data, pd.DataFrame) else data[0].columns
         columns = SUPERSTRUCTURE.append(cols)
         df = pd.DataFrame([], index=index, columns=columns)
         if not skip_checks:
@@ -227,7 +257,7 @@ class SuperstructureManager(object):
                 f = SuperstructureManager.remove_duplicates(f)
                 df.loc[f.index, columns] = f.loc[:, columns]
         df = SuperstructureManager.merge_flows_to_self(df)
-#        df.replace(np.nan, 0, inplace=True)
+        #        df.replace(np.nan, 0, inplace=True)
         return df.loc[:, cols]
 
     @staticmethod
@@ -238,8 +268,8 @@ class SuperstructureManager(object):
         if not isinstance(df.index, pd.MultiIndex):
             df.index = SuperstructureManager.build_index(df)
         # all import checks should take place before merge_flows_to_self
-#        df = SuperstructureManager.check_duplicates(df)
-#        df = SuperstructureManager.merge_flows_to_self(df)
+        #        df = SuperstructureManager.check_duplicates(df)
+        #        df = SuperstructureManager.merge_flows_to_self(df)
 
         return df
 
@@ -258,26 +288,38 @@ class SuperstructureManager(object):
         -------
         A pandas dataframe with the changes made to the scenario dataframe for these self referential flows
         """
-        self_referential_production_flows = df.loc[df.apply(lambda x: True if x['from key'] == x['to key']
-                                                          and x['flow type'] == 'technosphere'
-        else False, axis=1), :].copy()
+        self_referential_production_flows = df.loc[
+            df.apply(
+                lambda x: True
+                if x["from key"] == x["to key"] and x["flow type"] == "technosphere"
+                else False,
+                axis=1,
+            ),
+            :,
+        ].copy()
         self_referential_production_flows.index = pd.MultiIndex.from_arrays(
             [
                 self_referential_production_flows.index.get_level_values(0),
                 self_referential_production_flows.index.get_level_values(1),
-                self_referential_production_flows.index.get_level_values(2).str.replace('technosphere', 'production')
+                self_referential_production_flows.index.get_level_values(2).str.replace(
+                    "technosphere", "production"
+                ),
             ],
-            names=['input', 'output', 'flow']
+            names=["input", "output", "flow"],
         )
         scenario_cols = df.columns.difference(SUPERSTRUCTURE)
-        prod_indexes = self_referential_production_flows.loc[self_referential_production_flows.index.isin(df.index)].index
-        self_referential_production_flows.loc[prod_indexes, scenario_cols] \
-            = df.loc[df.index.isin(self_referential_production_flows.index), scenario_cols]
-        self_referential_production_flows.loc[prod_indexes, 'flow type'] = 'production'
+        prod_indexes = self_referential_production_flows.loc[
+            self_referential_production_flows.index.isin(df.index)
+        ].index
+        self_referential_production_flows.loc[prod_indexes, scenario_cols] = df.loc[
+            df.index.isin(self_referential_production_flows.index), scenario_cols
+        ]
+        self_referential_production_flows.loc[prod_indexes, "flow type"] = "production"
 
         # TODO use metadata for the default production values
-        for idx in self_referential_production_flows.loc[~self_referential_production_flows.index.isin(df.index)].index:
-
+        for idx in self_referential_production_flows.loc[
+            ~self_referential_production_flows.index.isin(df.index)
+        ].index:
             # this flow to self does not have a similar 'production' flow to self.
             # find the default production value and add it as a 'production' flow
 
@@ -285,18 +327,30 @@ class SuperstructureManager(object):
             # 1 reference flow (because we just take index 0 from list of production exchanges)
             # Once AB has support for multiple reference flows, we need to adjust this code to match the
             # right flow -something with looping over the flows and getting the right product or something-.
-            prod_amt = list(bw.get_activity(idx[0]).production())[0].get('amount', 1)
+            prod_amt = list(bw.get_activity(idx[0]).production())[0].get("amount", 1)
             # make a new df to edit the production, add the correct values/indices where needed
             # and concat to the main df
-            self_referential_production_flows.loc[idx, 'flow type'] = 'production'
+            self_referential_production_flows.loc[idx, "flow type"] = "production"
             self_referential_production_flows.loc[idx, scenario_cols] = prod_amt
         if len(self_referential_production_flows) > 0:
-            tech_idxs = [(x[0], x[1], "technosphere") for x in self_referential_production_flows.index]
+            tech_idxs = [
+                (x[0], x[1], "technosphere")
+                for x in self_referential_production_flows.index
+            ]
 
-            denominator = (self_referential_production_flows.loc[:, scenario_cols] + df.loc[tech_idxs, scenario_cols].values)
-            self_referential_production_flows.loc[:, scenario_cols] = self_referential_production_flows.loc[:, scenario_cols] / denominator
+            denominator = (
+                self_referential_production_flows.loc[:, scenario_cols]
+                + df.loc[tech_idxs, scenario_cols].values
+            )
+            self_referential_production_flows.loc[:, scenario_cols] = (
+                self_referential_production_flows.loc[:, scenario_cols] / denominator
+            )
             # if we did divide by 0 then replace these nans by 0
-            self_referential_production_flows.loc[:, scenario_cols] = self_referential_production_flows.loc[:, scenario_cols].where(~denominator.isin([0]), 0)
+            self_referential_production_flows.loc[
+                :, scenario_cols
+            ] = self_referential_production_flows.loc[:, scenario_cols].where(
+                ~denominator.isin([0]), 0
+            )
 
             # drop the 'technosphere' flows
             df = df.drop(tech_idxs)
@@ -311,7 +365,9 @@ class SuperstructureManager(object):
         """
         duplicates = df.index.duplicated(keep="last")
         if duplicates.any():
-            log.warning("Found and dropped {} duplicate exchanges.".format(duplicates.sum()))
+            log.warning(
+                "Found and dropped {} duplicate exchanges.".format(duplicates.sum())
+            )
             return df.loc[~duplicates, :]
         return df
 
@@ -325,14 +381,17 @@ class SuperstructureManager(object):
         """
         unknown_flows = df.loc[:, "flow type"].isna()
         if unknown_flows.any():
-            log.warning("Not all flow types are known, guessing {} flows".format(
-                unknown_flows.sum()
-            ))
+            log.warning(
+                "Not all flow types are known, guessing {} flows".format(
+                    unknown_flows.sum()
+                )
+            )
             df.loc[unknown_flows, "flow type"] = df.loc[
-                unknown_flows, EXCHANGE_KEYS].apply(guess_flow_type, axis=1)
+                unknown_flows, EXCHANGE_KEYS
+            ].apply(guess_flow_type, axis=1)
         return pd.MultiIndex.from_tuples(
             df.loc[:, INDEX_KEYS].apply(tuple, axis=1),
-            names=["input", "output", "flow"]
+            names=["input", "output", "flow"],
         )
 
     @staticmethod
@@ -344,11 +403,15 @@ class SuperstructureManager(object):
         -------
         A QDialog with a critical Error
         """
-        msg = "<p>One, or several, exchanges (rows) in the scenario file could not be found in the database (meaning:"\
-              " a part or all of the exchange information, i.e. input or output product/activity/unit/geography, or the"\
-            " key, have no match in the project databases).</p> <p>It is not possible to proceed at this point."\
+        msg = (
+            "<p>One, or several, exchanges (rows) in the scenario file could not be found in the database (meaning:"
+            " a part or all of the exchange information, i.e. input or output product/activity/unit/geography, or the"
+            " key, have no match in the project databases).</p> <p>It is not possible to proceed at this point."
             " you may save the scenario file with an additional column indicating the problematic exchanges.</p>"
-        pop = ABPopup.abCritical("Exchange(s) not found", msg, QPushButton('Save'), QPushButton('Cancel'))
+        )
+        pop = ABPopup.abCritical(
+            "Exchange(s) not found", msg, QPushButton("Save"), QPushButton("Cancel")
+        )
         pop.save_options()
         return pop
 
@@ -356,22 +419,22 @@ class SuperstructureManager(object):
     @_time_it_
     def fill_empty_process_keys_in_exchanges(df: pd.DataFrame) -> pd.DataFrame:
         """identifies those exchanges in the input dataframe that are missing keys.
-         If the keys cannot be found in the available databases then an Exception is
-         raised
+        If the keys cannot be found in the available databases then an Exception is
+        raised
 
-         Raises
-         ------
-         ScenarioExchangeNotFoundError if a scenario exchange is not present in the local database
+        Raises
+        ------
+        ScenarioExchangeNotFoundError if a scenario exchange is not present in the local database
 
-         Parameters
-         ----------
-         df: the input dataframe containing scenario data with exchanges that need to be
-         checked for the presence of a key
+        Parameters
+        ----------
+        df: the input dataframe containing scenario data with exchanges that need to be
+        checked for the presence of a key
 
-         Returns
-         -------
-         A pandas dataframe with complete entries for the dataframes 'to key' and 'from key' fields
-         """
+        Returns
+        -------
+        A pandas dataframe with complete entries for the dataframes 'to key' and 'from key' fields
+        """
         if df.loc[:, EXCHANGE_KEYS].isna().any().any():
             df = fill_df_keys_with_fields(df)
             _df = df.loc[df.loc[:, EXCHANGE_KEYS].isna().any(axis=1)]
@@ -380,7 +443,9 @@ class SuperstructureManager(object):
                 sdf_keys.dataframe_to_file(df, _df.index)
                 QApplication.restoreOverrideCursor()
                 sdf_keys.exec_()
-                raise ScenarioExchangeNotFoundError("Cannot find key(s) in local databases.")
+                raise ScenarioExchangeNotFoundError(
+                    "Cannot find key(s) in local databases."
+                )
         return df
 
     @staticmethod
@@ -401,7 +466,7 @@ class SuperstructureManager(object):
         -------
         A scenario dataframe with all scenario exchange keys verified with the local brightway databases
         """
-        dbs = set(df.loc[:, 'from database']).union(df.loc[:, 'to database'])
+        dbs = set(df.loc[:, "from database"]).union(df.loc[:, "to database"])
         df_ = pd.DataFrame({}, columns=df.columns)
         for db in dbs:
             _ = get_activities_from_keys(df, db)
@@ -412,12 +477,14 @@ class SuperstructureManager(object):
             sdf_keys.dataframe_to_file(df, df_.index)
             QApplication.restoreOverrideCursor()
             sdf_keys.exec_()
-            raise ScenarioExchangeNotFoundError("A key provided in the scenario file is not valid for the available database, consult the respective output.")
+            raise ScenarioExchangeNotFoundError(
+                "A key provided in the scenario file is not valid for the available database, consult the respective output."
+            )
 
     @staticmethod
     @_time_it_
     def check_scenario_exchange_values(df: pd.DataFrame, cols: pd.Index):
-        """"
+        """ "
         Checks the scenario exchange amounts from the dataframes for valid values, if none are found an error
         is raised, if some exchange amounts are absent a warning is raised and default values are used.
 
@@ -438,18 +505,22 @@ class SuperstructureManager(object):
         assert len(cols) > 0
         nas = _df.loc[:, cols].isna()
         if nas.all(axis=0).all():
-            msg = "<p>No exchange values could be observed in the last loaded scenario file. " + \
-                  "Exchange values must be recorded in a labelled scenario column with a name distinguishable from the" + \
-                  " default (required) columns, which are:</p>" + \
-                  SuperstructureManager.edit_superstructure_for_string() + \
-                  "<p>Please check the file contents for the scenario columns and the exchange amounts before loading again.</p>"
+            msg = (
+                "<p>No exchange values could be observed in the last loaded scenario file. "
+                + "Exchange values must be recorded in a labelled scenario column with a name distinguishable from the"
+                + " default (required) columns, which are:</p>"
+                + SuperstructureManager.edit_superstructure_for_string()
+                + "<p>Please check the file contents for the scenario columns and the exchange amounts before loading again.</p>"
+            )
             critical = ABPopup.abCritical(
-                "No scenario exchange data", msg, QPushButton('Cancel')
+                "No scenario exchange data", msg, QPushButton("Cancel")
             )
             critical.exec_()
             raise ScenarioExchangeDataNotFoundError
         elif nas.any(axis=0).any():
-            log.warning("Replacing empty values from the last loaded scenario difference file")
+            log.warning(
+                "Replacing empty values from the last loaded scenario difference file"
+            )
         if not is_numeric_dtype(np.array(_df.loc[:, cols])):
             # converting to numeric only works on lists and with the coercive option
             # any errors convert to np.nan and can then only be excluded if previous
@@ -457,15 +528,17 @@ class SuperstructureManager(object):
             _df.loc[:, cols].fillna(0, inplace=True)
             bad_entries = pd.DataFrame(index=_df.index)
             for col in cols:
-                bad_entries[col] = pd.to_numeric(df.loc[:, col], errors='coerce')
-            msg = "<p>Non-numeric data is present in the scenario exchange columns.</p><p> The Activity-Browser can "\
-                "only deal with numeric data for the calculations. To resolve this corrections will need to be made "\
+                bad_entries[col] = pd.to_numeric(df.loc[:, col], errors="coerce")
+            msg = (
+                "<p>Non-numeric data is present in the scenario exchange columns.</p><p> The Activity-Browser can "
+                "only deal with numeric data for the calculations. To resolve this corrections will need to be made "
                 "to these values in the scenario file.</p>"
+            )
             critical = ABPopup.abCritical(
                 "Bad (non-numeric) input data",
                 msg,
-                QPushButton('Save'),
-                QPushButton('Cancel')
+                QPushButton("Save"),
+                QPushButton("Cancel"),
             )
             critical.dataframe(df[bad_entries.isna().any(axis=1)], SUPERSTRUCTURE)
             critical.save_options()
@@ -476,8 +549,10 @@ class SuperstructureManager(object):
 
     @staticmethod
     @_time_it_
-    def check_duplicates(data: Optional[Union[pd.DataFrame, list]],
-                         index: list = ['to key', 'from key', 'flow type']):
+    def check_duplicates(
+        data: Optional[Union[pd.DataFrame, list]],
+        index: list = ["to key", "from key", "flow type"],
+    ):
         """
         Checks three fields to identify whether a scenario difference file contains duplicate exchanges:
         'from key', 'to key' and 'flow type'
@@ -513,14 +588,23 @@ class SuperstructureManager(object):
                 if not duplicates.empty:
                     duplicated[count] = duplicates
             if duplicated:
-
-                msg = "<p>Duplicates have been found, meaning that there are several rows in the scenario file describing "\
-                "scenarios for the same flow. The AB can deal with this by discarding all but the last row for this "\
-                "exchange.</p> <p>Press 'Ok' to proceed, press 'Cancel' to abort.</p>"
+                msg = (
+                    "<p>Duplicates have been found, meaning that there are several rows in the scenario file describing "
+                    "scenarios for the same flow. The AB can deal with this by discarding all but the last row for this "
+                    "exchange.</p> <p>Press 'Ok' to proceed, press 'Cancel' to abort.</p>"
+                )
                 for file, frame in duplicated.items():
-                    frame.insert(0, 'File', file, allow_duplicates=True)
-                warning = ABPopup.abWarning('Duplicate flow exchanges', msg, QPushButton('Ok'), QPushButton('Cancel'))
-                warning.dataframe(pd.concat([file for file in duplicated.values()]), ['File'] + SUPERSTRUCTURE)
+                    frame.insert(0, "File", file, allow_duplicates=True)
+                warning = ABPopup.abWarning(
+                    "Duplicate flow exchanges",
+                    msg,
+                    QPushButton("Ok"),
+                    QPushButton("Cancel"),
+                )
+                warning.dataframe(
+                    pd.concat([file for file in duplicated.values()]),
+                    ["File"] + SUPERSTRUCTURE,
+                )
                 QApplication.restoreOverrideCursor()
                 response = warning.exec_()
                 QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -529,9 +613,12 @@ class SuperstructureManager(object):
             return data
 
     @staticmethod
-    def _check_duplicates(dfp: pd.DataFrame, pdf: pd.DataFrame,
-                          index: list = ['to key', 'from key', 'flow type']) -> pd.DataFrame:
-        """ NOT TO BE USED OUTSIDE OF CALLING METHOD check_duplicates """
+    def _check_duplicates(
+        dfp: pd.DataFrame,
+        pdf: pd.DataFrame,
+        index: list = ["to key", "from key", "flow type"],
+    ) -> pd.DataFrame:
+        """NOT TO BE USED OUTSIDE OF CALLING METHOD check_duplicates"""
         # First save the original index and create a new one that can help the user identify duplicates in their files
         d_idx = dfp.index
         dfp.index = pd.Index([str(i) for i in range(dfp.shape[0])])
@@ -540,27 +627,35 @@ class SuperstructureManager(object):
         df = pd.concat([dfp, pdf], ignore_index=True)
         dfp.index = d_idx
         pdf.index = p_idx
-        dfp.drop_duplicates(index, keep='last', inplace=True)
+        dfp.drop_duplicates(index, keep="last", inplace=True)
         #        pdf.drop_duplicates(index, keep='last', inplace=True)
         return df.loc[df.duplicated(index, keep=False)]
 
     @staticmethod
-    def _check_duplicate(data: pd.DataFrame, index: list = ['to key', 'from key', 'flow type']) -> pd.DataFrame:
-        """ NOT TO BE USED OUTSIDE OF CALLING METHOD check_duplicates """
+    def _check_duplicate(
+        data: pd.DataFrame, index: list = ["to key", "from key", "flow type"]
+    ) -> pd.DataFrame:
+        """NOT TO BE USED OUTSIDE OF CALLING METHOD check_duplicates"""
         df = data.copy()
         df.index = pd.Index([str(i) for i in range(df.shape[0])])
         duplicates = df.duplicated(index, keep=False)
         if duplicates.any():
-            msg = "<p>Duplicates have been found, meaning that there are several rows in the scenario file describing " \
-                  "scenarios for the same flow. The AB can deal with this by discarding all but the last row for this " \
-                  "exchange.</p> <p>Press 'Ok' to proceed, press 'Cancel' to abort.</p>"
-            warning = ABPopup.abWarning('Duplicate flow exchanges', msg, QPushButton('Ok'), QPushButton('Cancel'))
+            msg = (
+                "<p>Duplicates have been found, meaning that there are several rows in the scenario file describing "
+                "scenarios for the same flow. The AB can deal with this by discarding all but the last row for this "
+                "exchange.</p> <p>Press 'Ok' to proceed, press 'Cancel' to abort.</p>"
+            )
+            warning = ABPopup.abWarning(
+                "Duplicate flow exchanges",
+                msg,
+                QPushButton("Ok"),
+                QPushButton("Cancel"),
+            )
             warning.dataframe(df.loc[duplicates], SUPERSTRUCTURE)
             QApplication.restoreOverrideCursor()
             response = warning.exec_()
             QApplication.setOverrideCursor(Qt.WaitCursor)
             if response == warning.Rejected:
                 raise ImportCanceledError
-            data.drop_duplicates(index, keep='last', inplace=True)
+            data.drop_duplicates(index, keep="last", inplace=True)
         return data
-

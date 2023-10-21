@@ -2,32 +2,33 @@
 import logging
 import sys
 
-
-from bw2data.parameters import ProjectParameter
 import numpy as np
-from PySide2.QtWidgets import QMessageBox, QWizard
 import pytest
+from bw2data.parameters import ProjectParameter
+from PySide2.QtWidgets import QMessageBox, QWizard
 from stats_arrays.distributions import (
-    LognormalUncertainty, UniformUncertainty, UndefinedUncertainty,
-    TriangularUncertainty
+    LognormalUncertainty,
+    TriangularUncertainty,
+    UndefinedUncertainty,
+    UniformUncertainty,
 )
 
-from activity_browser.ui.wizards import UncertaintyWizard
-from activity_browser.signals import signals
-
 from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
+from activity_browser.ui.wizards import UncertaintyWizard
 
 """
 Mess around with the uncertainty wizard.
 """
 
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, "uncertainty_wizard_test")
 
 log.setLevel(logging.INFO, True)
 log.propagate = True
 
-@pytest.mark.skipif(sys.platform=='darwin', reason="tests segfaults on osx")
+
+@pytest.mark.skipif(sys.platform == "darwin", reason="tests segfaults on osx")
 def test_wizard_fail(qtbot):
     """Can't create a wizard if no uncertainty interface exists."""
     mystery_box = ["Hello", "My", "Name", "Is", "Error"]  # Type is list.
@@ -35,7 +36,7 @@ def test_wizard_fail(qtbot):
         UncertaintyWizard(mystery_box)
 
 
-@pytest.mark.skipif(sys.platform=='darwin', reason="tests segfaults on osx")
+@pytest.mark.skipif(sys.platform == "darwin", reason="tests segfaults on osx")
 def test_uncertainty_wizard_simple(qtbot, bw2test, caplog):
     """Use extremely simple text to open the wizard and go to all the pages."""
     caplog.set_level(logging.INFO)
@@ -62,7 +63,7 @@ def test_uncertainty_wizard_simple(qtbot, bw2test, caplog):
     assert not wizard.using_pedigree
 
 
-@pytest.mark.skipif(sys.platform=='darwin', reason="tests segfaults on osx")
+@pytest.mark.skipif(sys.platform == "darwin", reason="tests segfaults on osx")
 def test_graph_rebuild(qtbot, bw2test):
     """Test that the graph is correctly built and rebuilt, ensure
     that the 'finish' button is enabled and disabled at the correct
@@ -97,7 +98,7 @@ def test_graph_rebuild(qtbot, bw2test):
     assert wizard.button(QWizard.FinishButton).isEnabled()
 
 
-@pytest.mark.skipif(sys.platform=='darwin', reason="tests segfaults on osx")
+@pytest.mark.skipif(sys.platform == "darwin", reason="tests segfaults on osx")
 def test_update_uncertainty(qtbot, ab_app):
     """Using the signal/controller setup, update the uncertainty of a parameter"""
     param = ProjectParameter.create(name="uc1", amount=3)
@@ -120,7 +121,7 @@ def test_update_uncertainty(qtbot, ab_app):
     assert "loc" in param.data and param.data["loc"] == 3
 
 
-@pytest.mark.skipif(sys.platform=='darwin', reason="tests segfaults on osx")
+@pytest.mark.skipif(sys.platform == "darwin", reason="tests segfaults on osx")
 def test_update_alter_mean(qtbot, monkeypatch, ab_app):
     param = ProjectParameter.create(name="uc2", amount=1)
     wizard = UncertaintyWizard(param, None)
@@ -135,7 +136,9 @@ def test_update_alter_mean(qtbot, monkeypatch, ab_app):
     assert wizard.type.complete
 
     # Now, monkeypatch Qt to ensure a 'yes' is selected for updating.
-    monkeypatch.setattr(QMessageBox, "question", staticmethod(lambda *args: QMessageBox.Yes))
+    monkeypatch.setattr(
+        QMessageBox, "question", staticmethod(lambda *args: QMessageBox.Yes)
+    )
     # Now trigger a 'finish' action
     with qtbot.waitSignal(signals.parameters_changed, timeout=100):
         wizard.button(QWizard.FinishButton).click()
@@ -148,7 +151,7 @@ def test_update_alter_mean(qtbot, monkeypatch, ab_app):
     assert np.isclose(np.log(param.amount), loc)
 
 
-@pytest.mark.skipif(sys.platform=='darwin', reason="tests segfaults on osx")
+@pytest.mark.skipif(sys.platform == "darwin", reason="tests segfaults on osx")
 def test_lognormal_mean_balance(qtbot, bw2test):
     uncertain = {
         "loc": 2,
@@ -182,7 +185,7 @@ def test_lognormal_mean_balance(qtbot, bw2test):
     assert wizard.field("negative")
 
 
-@pytest.mark.skipif(sys.platform=='darwin', reason="tests segfaults on osx")
+@pytest.mark.skipif(sys.platform == "darwin", reason="tests segfaults on osx")
 def test_pedigree(qtbot, bw2test):
     """Configure uncertainty using the pedigree page of the wizard."""
     uncertain = {
@@ -194,7 +197,7 @@ def test_pedigree(qtbot, bw2test):
             "completeness": 2,
             "temporal correlation": 2,
             "geographical correlation": 2,
-            "further technological correlation": 3
+            "further technological correlation": 3,
         },
     }
     param = ProjectParameter.create(name="uc1", amount=3, data=uncertain)

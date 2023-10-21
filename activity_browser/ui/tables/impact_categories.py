@@ -6,10 +6,14 @@ from PySide2.QtCore import QModelIndex, Slot
 
 from ...signals import signals
 from ..icons import qicons
-from .views import ABDictTreeView, ABFilterableDataFrameView, ABDataFrameView
-from .models import MethodCharacterizationFactorsModel, MethodsListModel, MethodsTreeModel
 from .delegates import FloatDelegate, UncertaintyDelegate
 from .inventory import ActivitiesBiosphereTable
+from .models import (
+    MethodCharacterizationFactorsModel,
+    MethodsListModel,
+    MethodsTreeModel,
+)
+from .views import ABDataFrameView, ABDictTreeView, ABFilterableDataFrameView
 
 
 class MethodsTable(ABFilterableDataFrameView):
@@ -42,25 +46,32 @@ class MethodsTable(ABFilterableDataFrameView):
     @Slot(name="resizeView")
     def custom_view_sizing(self) -> None:
         self.setColumnHidden(self.model.method_col, True)
-        self.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
-        ))
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
+            )
+        )
 
     def contextMenuEvent(self, event) -> None:
         if self.indexAt(event.pos()).row() == -1:
             return
         menu = QtWidgets.QMenu(self)
         menu.addAction(
-            qicons.copy, "Duplicate Impact Category",
-            lambda: self.model.copy_method(self.currentIndex())
+            qicons.copy,
+            "Duplicate Impact Category",
+            lambda: self.model.copy_method(self.currentIndex()),
         )
         menu.addAction(
-            qicons.delete, "Delete Impact Category",
-            lambda: self.model.delete_method(self.currentIndex())
+            qicons.delete,
+            "Delete Impact Category",
+            lambda: self.model.delete_method(self.currentIndex()),
         )
         menu.addAction(
-            qicons.edit, "Inspect Impact Category",
-            lambda: signals.method_selected.emit(self.model.get_method(self.currentIndex()))
+            qicons.edit,
+            "Inspect Impact Category",
+            lambda: signals.method_selected.emit(
+                self.model.get_method(self.currentIndex())
+            ),
         )
         menu.exec_(event.globalPos())
 
@@ -145,7 +156,7 @@ class MethodsTree(ABDictTreeView):
     @Slot(QModelIndex, name="methodSelection")
     def method_selected(self):
         tree_level = self.tree_level()
-        if tree_level[0] == 'leaf':
+        if tree_level[0] == "leaf":
             method = self.model.get_method(tree_level)
             signals.method_selected.emit(method)
 
@@ -154,34 +165,36 @@ class MethodsTree(ABDictTreeView):
         if self.indexAt(event.pos()).row() == -1:
             return
         menu = QtWidgets.QMenu(self)
-        menu.addAction(qicons.copy, "Duplicate Impact Category",
-                       lambda: self.copy_method()
-                       )
-        menu.addAction(qicons.delete, "Delete Impact Category",
-                       lambda: self.delete_method()
-                       )
-        if self.tree_level()[0] == 'leaf':
+        menu.addAction(
+            qicons.copy, "Duplicate Impact Category", lambda: self.copy_method()
+        )
+        menu.addAction(
+            qicons.delete, "Delete Impact Category", lambda: self.delete_method()
+        )
+        if self.tree_level()[0] == "leaf":
             menu.addAction(qicons.edit, "Inspect Impact Category", self.method_selected)
         else:
             menu.addAction(qicons.forward, "Expand all sub levels", self.expand_branch)
-            menu.addAction(qicons.backward, "Collapse all sub levels", self.collapse_branch)
+            menu.addAction(
+                qicons.backward, "Collapse all sub levels", self.collapse_branch
+            )
         menu.exec_(event.globalPos())
 
     def selected_methods(self) -> Iterable:
         """Returns a generator which yields the 'method' for each row."""
         tree_level = self.tree_level()
-        if tree_level[0] == 'leaf':
+        if tree_level[0] == "leaf":
             # filter on the leaf
             return [self.model.get_method(tree_level)]
 
-        if tree_level[0] == 'root':
+        if tree_level[0] == "root":
             # filter on the root + ', '
             # (this needs to be added in case one root level starts with a shorter name of another one
             # example: 'ecological scarcity 2013' and 'ecological scarcity 2013 no LT'
-            filter_on = tree_level[1] + ', '
+            filter_on = tree_level[1] + ", "
         else:
             # filter on the branch and its parents/roots
-            filter_on = ', '.join(tree_level[1]) + ', '
+            filter_on = ", ".join(tree_level[1]) + ", "
 
         methods = self.model.get_methods(filter_on)
         return methods
@@ -194,12 +207,12 @@ class MethodsTree(ABDictTreeView):
         branch: the descending list of branch levels, list()
             leaf/branch example: ('CML 2001', 'climate change')"""
         indexes = self.selectedIndexes()
-        if indexes[1].data() != '' or indexes[2].data() != '':
-            return 'leaf', self.find_levels()
+        if indexes[1].data() != "" or indexes[2].data() != "":
+            return "leaf", self.find_levels()
         elif indexes[0].parent().data() is None:
-            return 'root', indexes[0].data()
+            return "root", indexes[0].data()
         else:
-            return 'branch', self.find_levels()
+            return "branch", self.find_levels()
 
     def find_levels(self, level=None) -> list:
         """Find all levels of branch."""
@@ -276,9 +289,11 @@ class MethodCharacterizationFactorsTable(ABFilterableDataFrameView):
     def custom_view_sizing(self) -> None:
         self.setColumnHidden(self.model.cf_column, True)
         self.hide_uncertain()
-        self.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
-        ))
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
+            )
+        )
 
     @Slot(bool, name="toggleUncertainColumns")
     def hide_uncertain(self, hide: bool = True) -> None:
@@ -295,10 +310,14 @@ class MethodCharacterizationFactorsTable(ABFilterableDataFrameView):
         if self.indexAt(event.pos()).row() == -1:
             return
         menu = QtWidgets.QMenu(self)
-        edit = menu.addAction(qicons.edit, "Modify uncertainty", self.modify_uncertainty)
+        edit = menu.addAction(
+            qicons.edit, "Modify uncertainty", self.modify_uncertainty
+        )
         edit.setEnabled(not self.read_only)
         menu.addSeparator()
-        remove = menu.addAction(qicons.clear, "Remove uncertainty", self.remove_uncertainty)
+        remove = menu.addAction(
+            qicons.clear, "Remove uncertainty", self.remove_uncertainty
+        )
         remove.setEnabled(not self.read_only)
         delete = menu.addAction(qicons.delete, "Delete", self.delete_cf)
         delete.setEnabled(not self.read_only)
@@ -318,8 +337,7 @@ class MethodCharacterizationFactorsTable(ABFilterableDataFrameView):
         self.model.delete_cf(self.selectedIndexes())
 
     def dragMoveEvent(self, event) -> None:
-        """ Check if drops are allowed when dragging something over.
-        """
+        """Check if drops are allowed when dragging something over."""
         source_table = event.source()
         if not isinstance(source_table, ActivitiesBiosphereTable):
             # never allow drops from something other than biosphere databases

@@ -1,19 +1,25 @@
 # -*- coding: utf-8 -*-
-from typing import Iterator, Optional, Union
 import uuid
+from typing import Iterator, Optional, Union
 
 import brightway2 as bw
 from bw2data import get_node
 from bw2data.backends.peewee.proxies import Activity, ExchangeProxyBase
-from PySide2.QtCore import QObject, Slot, Qt
 from PySide2 import QtWidgets
+from PySide2.QtCore import QObject, Qt, Slot
 
-from activity_browser.bwutils import AB_metadata, commontasks as bc
+from activity_browser.bwutils import AB_metadata
+from activity_browser.bwutils import commontasks as bc
 from activity_browser.bwutils.strategies import relink_activity_exchanges
 from activity_browser.settings import project_settings
 from activity_browser.signals import signals
 from activity_browser.ui.wizards import UncertaintyWizard
-from ..ui.widgets import ActivityLinkingDialog, ActivityLinkingResultsDialog, LocationLinkingDialog
+
+from ..ui.widgets import (
+    ActivityLinkingDialog,
+    ActivityLinkingResultsDialog,
+    LocationLinkingDialog,
+)
 from .parameter import ParameterController
 
 
@@ -29,7 +35,9 @@ class ActivityController(QObject):
         signals.duplicate_activity_new_loc.connect(self.duplicate_activity_new_loc)
         signals.duplicate_activities.connect(self.duplicate_activity)
         signals.duplicate_to_db_interface.connect(self.show_duplicate_to_db_interface)
-        signals.duplicate_to_db_interface_multiple.connect(self.show_duplicate_to_db_interface)
+        signals.duplicate_to_db_interface_multiple.connect(
+            self.show_duplicate_to_db_interface
+        )
         signals.activity_modified.connect(self.modify_activity)
         signals.duplicate_activity_to_db.connect(self.duplicate_activity_to_db)
         signals.relink_activity.connect(self.relink_activity_exchange)
@@ -43,12 +51,13 @@ class ActivityController(QObject):
         )
         if ok and name:
             data = {
-                "name": name, "reference product": name, "unit": "unit",
-                "type": "process"
+                "name": name,
+                "reference product": name,
+                "unit": "unit",
+                "type": "process",
             }
             new_act = bw.Database(database_name).new_activity(
-                code=uuid.uuid4().hex,
-                **data
+                code=uuid.uuid4().hex, **data
             )
             new_act.save()
             production_exchange = new_act.new_exchange(
@@ -67,16 +76,20 @@ class ActivityController(QObject):
         """Use the given data to delete one or more activities from brightway2."""
         activities = self._retrieve_activities(data)
 
-        text = ("One or more activities have downstream processes. "
-                "Deleting these activities will remove the exchange from the downstream processes, this can't be undone.\n\n"
-                "Are you sure you want to continue?")
+        text = (
+            "One or more activities have downstream processes. "
+            "Deleting these activities will remove the exchange from the downstream processes, this can't be undone.\n\n"
+            "Are you sure you want to continue?"
+        )
 
         if any(len(act.upstream()) > 0 for act in activities):
-            choice = QtWidgets.QMessageBox.warning(self.window,
-                                                   "Activity/Activities has/have downstream processes",
-                                                   text,
-                                                   QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                                                   QtWidgets.QMessageBox.No)
+            choice = QtWidgets.QMessageBox.warning(
+                self.window,
+                "Activity/Activities has/have downstream processes",
+                text,
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.No,
+            )
             if choice == QtWidgets.QMessageBox.No:
                 return
 
@@ -102,14 +115,19 @@ class ActivityController(QObject):
     def generate_copy_code(key: tuple) -> str:
         db, code = key
         metadata = AB_metadata.get_database_metadata(db)
-        if '_copy' in code:
-            code = code.split('_copy')[0]
-        copies = metadata["key"].apply(
-            lambda x: x[1] if code in x[1] and "_copy" in x[1] else None
-        ).dropna().to_list() if not metadata.empty else []
+        if "_copy" in code:
+            code = code.split("_copy")[0]
+        copies = (
+            metadata["key"]
+            .apply(lambda x: x[1] if code in x[1] and "_copy" in x[1] else None)
+            .dropna()
+            .to_list()
+            if not metadata.empty
+            else []
+        )
         if not copies:
             return "{}_copy1".format(code)
-        n = max((int(c.split('_copy')[1]) for c in copies))
+        n = max((int(c.split("_copy")[1]) for c in copies))
         return "{}_copy{}".format(code, n + 1)
 
     @Slot(tuple, name="copyActivity")
@@ -129,9 +147,9 @@ class ActivityController(QObject):
                     exc.input = new_act
                     exc.save()
             # Update 'products'
-            for product in new_act.get('products', []):
-                if product.get('input') == act.key:
-                    product['input'] = new_act.key
+            for product in new_act.get("products", []):
+                if product.get("input") == act.key:
+                    product["input"] = new_act.key
             new_act.save()
             AB_metadata.update_metadata(new_act.key)
             signals.safe_open_activity_tab.emit(new_act.key)
@@ -162,7 +180,9 @@ class ActivityController(QObject):
         Returns
         -------
         """
-        act = self._retrieve_activities(old_key)[0]  # we only take one activity but this function always returns list
+        act = self._retrieve_activities(old_key)[
+            0
+        ]  # we only take one activity but this function always returns list
 
         # get list of dependent databases for activity and load to MetaDataStore
         databases = []
@@ -174,17 +194,19 @@ class ActivityController(QObject):
         # get list of all unique locations in the dependent databases (sorted alphabetically)
         locations = []
         for db in dbs.values():
-            locations += db['location'].to_list()  # add all locations to one list
+            locations += db["location"].to_list()  # add all locations to one list
         locations = list(set(locations))  # reduce the list to only unique items
         locations.sort()
 
         # get the location to relink
         db = dbs[act.key[0]]
-        old_location = db.loc[db['key'] == act.key]['location'].iloc[0]
+        old_location = db.loc[db["key"] == act.key]["location"].iloc[0]
 
         # trigger dialog with autocomplete-writeable-dropdown-list
         options = (old_location, locations)
-        dialog = LocationLinkingDialog.relink_location(act['name'], options, self.window)
+        dialog = LocationLinkingDialog.relink_location(
+            act["name"], options, self.window
+        )
         if dialog.exec_() != LocationLinkingDialog.Accepted:
             # if the dialog accept button is not clicked, do nothing
             return
@@ -195,8 +217,10 @@ class ActivityController(QObject):
             use_alternatives = dialog.use_alternatives_checkbox.isChecked()
 
         del_exch = []  # delete these exchanges
-        succesful_links = {}  # dict of dicts, key of new exch : {new values} <-- see 'values' below
-        alternatives = ['RoW', 'GLO']  # alternatives to try to match to
+        succesful_links = (
+            {}
+        )  # dict of dicts, key of new exch : {new values} <-- see 'values' below
+        alternatives = ["RoW", "GLO"]  # alternatives to try to match to
         # in the future, 'alternatives' could be improved by making use of some location hierarchy. From that we could
         # get things like if the new location is NL but there is no NL, but RER exists, we use that. However, for that
         # we need some hierarchical structure to the location data, which may be available from ecoinvent, but we need
@@ -205,24 +229,26 @@ class ActivityController(QObject):
         # get exchanges to re-link
         for exch in act.technosphere():
             db = dbs[exch.input[0]]
-            if db.loc[db['key'] == exch.input]['location'].iloc[0] != old_location:
+            if db.loc[db["key"] == exch.input]["location"].iloc[0] != old_location:
                 continue  # this exchange has a location we're not trying to re-link, continue
 
             # get relevant data to match on
-            row = db.loc[db['key'] == exch.input]
-            name = row['name'].iloc[0]
-            prod = row['reference product'].iloc[0]
-            unit = row['unit'].iloc[0]
+            row = db.loc[db["key"] == exch.input]
+            name = row["name"].iloc[0]
+            prod = row["reference product"].iloc[0]
+            unit = row["unit"].iloc[0]
 
             # get candidates to match (must have same name, product and unit)
-            candidates = db.loc[(db['name'] == name)
-                                & (db['reference product'] == prod)
-                                & (db['unit'] == unit)]
+            candidates = db.loc[
+                (db["name"] == name)
+                & (db["reference product"] == prod)
+                & (db["unit"] == unit)
+            ]
             if len(candidates) <= 1:
                 continue  # this activity does not exist in this database with another location (1 is self), continue
 
             # check candidates for new_location
-            candidate = candidates.loc[candidates['location'] == new_location]
+            candidate = candidates.loc[candidates["location"] == new_location]
             if len(candidate) == 0 and not use_alternatives:
                 continue  # there is no candidate, continue
             elif len(candidate) > 1:
@@ -230,19 +256,19 @@ class ActivityController(QObject):
             elif len(candidate) == 0:
                 # there are no candidates, but we can try alternatives
                 for alt in alternatives:
-                    candidate = candidates.loc[candidates['location'] == alt]
+                    candidate = candidates.loc[candidates["location"] == alt]
                     if len(candidate) != 0:
                         break  # found an alternative in with this alternative location, stop looking
 
             # at this point, we have found 1 suitable candidate, whether that is new_location or alternative location
             del_exch.append(exch)
             values = {
-                'amount': exch.get('amount', False),
-                'comment': exch.get('comment', False),
-                'formula': exch.get('formula', False),
-                'uncertainty': exch.get('uncertainty', False)
+                "amount": exch.get("amount", False),
+                "comment": exch.get("comment", False),
+                "formula": exch.get("formula", False),
+                "uncertainty": exch.get("uncertainty", False),
             }
-            succesful_links[candidate['key'].iloc[0]] = values
+            succesful_links[candidate["key"].iloc[0]] = values
 
         # now, create a new activity by copying the old one
         db_name = act.key[0]
@@ -254,16 +280,18 @@ class ActivityController(QObject):
                 exc.input = new_act
                 exc.save()
         # update 'products'
-        for product in new_act.get('products', []):
-            if product.get('input') == act.key:
+        for product in new_act.get("products", []):
+            if product.get("input") == act.key:
                 product.input = new_act.key
         new_act.save()
         # save the new location to the activity
-        self.modify_activity(new_act.key, 'location', new_location)
+        self.modify_activity(new_act.key, "location", new_location)
         # delete old exchanges
         signals.exchanges_deleted.emit(del_exch)
         # add the new exchanges with all values carried over from last exch
-        signals.exchanges_add_w_values.emit(list(succesful_links.keys()), new_act.key, succesful_links)
+        signals.exchanges_add_w_values.emit(
+            list(succesful_links.keys()), new_act.key, succesful_links
+        )
 
         # update the MetaDataStore and open new activity
         AB_metadata.update_metadata(new_act.key)
@@ -276,8 +304,9 @@ class ActivityController(QObject):
 
     @Slot(tuple, str, name="copyActivityToDbInterface")
     @Slot(list, str, name="copyActivitiesToDbInterface")
-    def show_duplicate_to_db_interface(self, data: Union[tuple, Iterator[tuple]],
-                                       db_name: Optional[str] = None) -> None:
+    def show_duplicate_to_db_interface(
+        self, data: Union[tuple, Iterator[tuple]], db_name: Optional[str] = None
+    ) -> None:
         activities = self._retrieve_activities(data)
         origin_db = db_name or next(iter(activities)).get("database")
 
@@ -286,14 +315,19 @@ class ActivityController(QObject):
             available_target_dbs.remove(origin_db)
         if not available_target_dbs:
             QtWidgets.QMessageBox.warning(
-                self.window, "No target database",
-                "No valid target databases available. Create a new database or set one to writable (not read-only)."
+                self.window,
+                "No target database",
+                "No valid target databases available. Create a new database or set one to writable (not read-only).",
             )
             return
 
         target_db, ok = QtWidgets.QInputDialog.getItem(
-            self.window, "Copy activity to database", "Target database:",
-            available_target_dbs, 0, False
+            self.window,
+            "Copy activity to database",
+            "Target database:",
+            available_target_dbs,
+            0,
+            False,
         )
         if target_db and ok:
             new_keys = [self._copy_activity(target_db, act) for act in activities]
@@ -318,7 +352,7 @@ class ActivityController(QObject):
 
     @staticmethod
     def _copy_activity(target: str, act: Activity) -> tuple:
-        new_code = ActivityController.generate_copy_code((target, act['code']))
+        new_code = ActivityController.generate_copy_code((target, act["code"]))
         new_key = (target, new_code)
         act.copy(code=new_code, database=target)
         AB_metadata.update_metadata(new_key)
@@ -339,9 +373,11 @@ class ActivityController(QObject):
         """Given either a key-tuple or a list of key-tuples, return a list
         of activities.
         """
-        return [bw.get_activity(data)] if isinstance(data, tuple) else [
-            bw.get_activity(k) for k in data
-        ]
+        return (
+            [bw.get_activity(data)]
+            if isinstance(data, tuple)
+            else [bw.get_activity(k) for k in data]
+        )
 
     @Slot(tuple, name="relinkActivityExchanges")
     def relink_activity_exchange(self, key: tuple) -> None:
@@ -349,20 +385,28 @@ class ActivityController(QObject):
         actvty = db.get(key[1])
         depends = db.find_dependents()
         options = [(depend, bw.databases.list) for depend in depends]
-        dialog = ActivityLinkingDialog.relink_sqlite(actvty['name'], options, self.window)
+        dialog = ActivityLinkingDialog.relink_sqlite(
+            actvty["name"], options, self.window
+        )
         relinking_results = {}
         if dialog.exec_() == ActivityLinkingDialog.Accepted:
             QtWidgets.QApplication.setOverrideCursor(Qt.WaitCursor)
             for old, new in dialog.relink.items():
                 other = bw.Database(new)
-                failed, succeeded, examples = relink_activity_exchanges(actvty, old, other)
+                failed, succeeded, examples = relink_activity_exchanges(
+                    actvty, old, other
+                )
                 relinking_results[f"{old} --> {other.name}"] = (failed, succeeded)
             QtWidgets.QApplication.restoreOverrideCursor()
             if failed > 0:
-                relinking_dialog = ActivityLinkingResultsDialog.present_relinking_results(self.window, relinking_results, examples)
+                relinking_dialog = (
+                    ActivityLinkingResultsDialog.present_relinking_results(
+                        self.window, relinking_results, examples
+                    )
+                )
                 relinking_dialog.exec_()
                 activity = relinking_dialog.open_activity()
-            signals.database_changed.emit(actvty['name'])
+            signals.database_changed.emit(actvty["name"])
             signals.databases_changed.emit()
 
 
@@ -380,7 +424,9 @@ class ExchangeController(QObject):
         signals.exchange_pedigree_modified.connect(self.modify_exchange_pedigree)
 
     @Slot(list, tuple, name="addExchangesToKey")
-    def add_exchanges(self, from_keys: Iterator[tuple], to_key: tuple, new_values: dict = {}) -> None:
+    def add_exchanges(
+        self, from_keys: Iterator[tuple], to_key: tuple, new_values: dict = {}
+    ) -> None:
         """
         Add new exchanges.
 
@@ -401,11 +447,11 @@ class ExchangeController(QObject):
             technosphere_db = bc.is_technosphere_db(key[0])
             exc = activity.new_exchange(input=key, amount=1)
             if technosphere_db is True:
-                exc['type'] = 'technosphere'
+                exc["type"] = "technosphere"
             elif technosphere_db is False:
-                exc['type'] = 'biosphere'
+                exc["type"] = "biosphere"
             else:
-                exc['type'] = 'unknown'
+                exc["type"] = "unknown"
             # add optional exchange values
             if new_vals := new_values.get(key, {}):
                 for field_name, value in new_vals.items():

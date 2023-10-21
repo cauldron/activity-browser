@@ -4,30 +4,35 @@ Use the existing parameters to look at the uncertainty and edit it in
 multiple ways
 """
 import brightway2 as bw
-from PySide2 import QtCore, QtWidgets
 import pytest
+from PySide2 import QtCore, QtWidgets
 from stats_arrays.distributions import UndefinedUncertainty, UniformUncertainty
 
 from activity_browser.bwutils.uncertainty import (
-    ExchangeUncertaintyInterface, CFUncertaintyInterface, get_uncertainty_interface
+    CFUncertaintyInterface,
+    ExchangeUncertaintyInterface,
+    get_uncertainty_interface,
 )
 from activity_browser.ui.tables.delegates import UncertaintyDelegate
 from activity_browser.ui.tables.parameters import ProjectParameterTable
+
 
 def test_exchange_interface(qtbot, ab_app):
     flow = bw.Database(bw.config.biosphere).random()
     db = bw.Database("testdb")
     act_key = ("testdb", "act_unc")
-    db.write({
-        act_key: {
-            "name": "act_unc",
-            "unit": "kilogram",
-            "exchanges": [
-                {"input": act_key, "amount": 1, "type": "production"},
-                {"input": flow.key, "amount": 2, "type": "biosphere"},
-            ]
+    db.write(
+        {
+            act_key: {
+                "name": "act_unc",
+                "unit": "kilogram",
+                "exchanges": [
+                    {"input": act_key, "amount": 1, "type": "production"},
+                    {"input": flow.key, "amount": 2, "type": "biosphere"},
+                ],
+            }
         }
-    })
+    )
 
     act = bw.get_activity(act_key)
     exc = next(e for e in act.biosphere())
@@ -58,7 +63,11 @@ def test_cf_interface(qtbot, ab_app):
     assert interface.uncertainty == {}
 
     # Now add uncertainty.
-    uncertainty = {"minimum": 1, "maximum": 18, "uncertainty type": UniformUncertainty.id}
+    uncertainty = {
+        "minimum": 1,
+        "maximum": 18,
+        "uncertainty type": UniformUncertainty.id,
+    }
     uncertainty["amount"] = amount
     cf = (cf[0], uncertainty)
     interface = get_uncertainty_interface(cf)
@@ -66,4 +75,8 @@ def test_cf_interface(qtbot, ab_app):
     assert interface.is_uncertain  # It is uncertain now!
     assert interface.amount == amount
     assert interface.uncertainty_type == UniformUncertainty
-    assert interface.uncertainty == {"uncertainty type": UniformUncertainty.id, "minimum": 1, "maximum": 18}
+    assert interface.uncertainty == {
+        "uncertainty type": UniformUncertainty.id,
+        "minimum": 1,
+        "maximum": 18,
+    }

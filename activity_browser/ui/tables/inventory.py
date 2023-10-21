@@ -1,36 +1,36 @@
 # -*- coding: utf-8 -*-
-from PySide2 import QtWidgets, QtCore
+from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
 
 from ...settings import project_settings
 from ...signals import signals
 from ..icons import qicons
 from .delegates import CheckboxDelegate
-from .models import DatabasesModel, ActivitiesBiosphereModel
+from .models import ActivitiesBiosphereModel, DatabasesModel
 from .views import ABDataFrameView, ABFilterableDataFrameView
 
 
 class DatabasesTable(ABDataFrameView):
-    """ Displays metadata for the databases found within the selected project.
+    """Displays metadata for the databases found within the selected project.
 
     Databases can be read-only or writable, with users preference persisted
     in settings file.
     - User double-clicks to see the activities and flows within a db
     - A context menu (right click) provides further functionality
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.verticalHeader().setVisible(False)
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setItemDelegateForColumn(2, CheckboxDelegate(self))
-        self.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred,
-            QtWidgets.QSizePolicy.Maximum
-        ))
-        self.relink_action = QtWidgets.QAction(
-            qicons.edit, "Relink the database", None
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
+            )
         )
-        self.new_activity_action =QtWidgets.QAction(
+        self.relink_action = QtWidgets.QAction(qicons.edit, "Relink the database", None)
+        self.new_activity_action = QtWidgets.QAction(
             qicons.add, "Add new activity", None
         )
         self.model = DatabasesModel(parent=self)
@@ -55,24 +55,28 @@ class DatabasesTable(ABDataFrameView):
 
         menu = QtWidgets.QMenu(self)
         menu.addAction(
-            qicons.delete, "Delete database",
-            lambda: signals.delete_database.emit(self.selected_db_name)
+            qicons.delete,
+            "Delete database",
+            lambda: signals.delete_database.emit(self.selected_db_name),
         )
         menu.addAction(self.relink_action)
         menu.addAction(
-            qicons.duplicate_database, "Copy database",
-            lambda: signals.copy_database.emit(self.selected_db_name)
+            qicons.duplicate_database,
+            "Copy database",
+            lambda: signals.copy_database.emit(self.selected_db_name),
         )
         menu.addAction(self.new_activity_action)
         proxy = self.indexAt(event.pos())
         if proxy.isValid():
             db_name = self.model.get_db_name(proxy)
             self.relink_action.setEnabled(not project_settings.db_is_readonly(db_name))
-            self.new_activity_action.setEnabled(not project_settings.db_is_readonly(db_name))
+            self.new_activity_action.setEnabled(
+                not project_settings.db_is_readonly(db_name)
+            )
         menu.exec_(event.globalPos())
 
     def mousePressEvent(self, e):
-        """ A single mouseclick should trigger the 'read-only' column to alter
+        """A single mouseclick should trigger the 'read-only' column to alter
         its value.
 
         NOTE: This is kind of hacky as we are deliberately sidestepping
@@ -93,8 +97,7 @@ class DatabasesTable(ABDataFrameView):
 
     @property
     def selected_db_name(self) -> str:
-        """ Return the database name of the user-selected index.
-        """
+        """Return the database name of the user-selected index."""
         return self.model.get_db_name(self.currentIndex())
 
 
@@ -118,7 +121,8 @@ class ActivitiesBiosphereTable(ABFilterableDataFrameView):
         )
         self.duplicate_activity_new_loc_action.setToolTip(
             "Duplicate this activity to another location.\n"
-            "Link the exchanges to a new location if it is availabe.")  # only for 1 activity
+            "Link the exchanges to a new location if it is availabe."
+        )  # only for 1 activity
         self.delete_activity_action = QtWidgets.QAction(
             qicons.delete, "Delete activity/-ies", None
         )
@@ -136,16 +140,15 @@ class ActivitiesBiosphereTable(ABFilterableDataFrameView):
         return self.model.technosphere
 
     def contextMenuEvent(self, event) -> None:
-        """ Construct and present a menu.
-        """
+        """Construct and present a menu."""
         if self.indexAt(event.pos()).row() == -1 and len(self.model._dataframe) != 0:
             return
 
         if len(self.selectedIndexes()) > 1:
-            act = 'activities'
+            act = "activities"
             self.duplicate_activity_new_loc_action.setEnabled(False)
         else:
-            act = 'activity'
+            act = "activity"
             self.duplicate_activity_new_loc_action.setEnabled(True)
 
         self.duplicate_activity_action.setText("Duplicate {}".format(act))
@@ -160,27 +163,28 @@ class ActivitiesBiosphereTable(ABFilterableDataFrameView):
 
         menu.addAction(qicons.right, "Open activity", self.open_activity_tabs)
         menu.addAction(
-            qicons.graph_explorer, "Open in Graph Explorer",
+            qicons.graph_explorer,
+            "Open in Graph Explorer",
             lambda: signals.open_activity_graph_tab.emit(
                 self.model.get_key(self.currentIndex())
-            )
+            ),
         )
         menu.addAction(self.new_activity_action)
         menu.addAction(self.duplicate_activity_action)
         menu.addAction(self.duplicate_activity_new_loc_action)
         menu.addAction(self.delete_activity_action)
         menu.addAction(
-            qicons.edit, "Relink the activity exchanges",
-            self.relink_activity_exchanges
+            qicons.edit, "Relink the activity exchanges", self.relink_activity_exchanges
         )
         menu.addAction(
-            qicons.duplicate_to_other_database, "Duplicate to other database",
-            self.duplicate_activities_to_db
+            qicons.duplicate_to_other_database,
+            "Duplicate to other database",
+            self.duplicate_activities_to_db,
         )
 
         # Submenu copy to clipboard
         submenu_copy = QtWidgets.QMenu(menu)
-        submenu_copy.setTitle('Copy to clipboard')
+        submenu_copy.setTitle("Copy to clipboard")
         submenu_copy.setIcon(qicons.copy_to_clipboard)
         submenu_copy.addAction(self.copy_exchanges_for_SDF_action)
         menu.addMenu(submenu_copy)
@@ -193,9 +197,13 @@ class ActivitiesBiosphereTable(ABFilterableDataFrameView):
             lambda: signals.new_activity.emit(self.database_name)
         )
         self.duplicate_activity_action.triggered.connect(self.duplicate_activities)
-        self.duplicate_activity_new_loc_action.triggered.connect(self.duplicate_activity_to_new_loc)
+        self.duplicate_activity_new_loc_action.triggered.connect(
+            self.duplicate_activity_to_new_loc
+        )
         self.delete_activity_action.triggered.connect(self.delete_activities)
-        self.copy_exchanges_for_SDF_action.triggered.connect(self.copy_exchanges_for_SDF)
+        self.copy_exchanges_for_SDF_action.triggered.connect(
+            self.copy_exchanges_for_SDF
+        )
         self.doubleClicked.connect(self.open_activity_tab)
         self.model.updated.connect(self.update_proxy_model)
         self.model.updated.connect(self.custom_view_sizing)
@@ -269,7 +277,7 @@ class ActivitiesBiosphereTable(ABFilterableDataFrameView):
 
     @Slot(str, bool, name="updateReadOnly")
     def update_activity_table_read_only(self, db_name: str, db_read_only: bool) -> None:
-        """ [new, duplicate & delete] actions can only be selected for
+        """[new, duplicate & delete] actions can only be selected for
         databases that are not read-only.
 
         The user can change state of dbs other than the open one, so check

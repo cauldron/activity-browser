@@ -5,7 +5,6 @@ from PySide2.QtCore import Signal
 
 from ...bwutils import commontasks as bc
 
-
 PARAMETER_STRINGS = (
     "Project: Available to all other parameters",
     "Database: Available to Database and Activity parameters of the same database",
@@ -38,9 +37,7 @@ class ParameterWizard(QtWidgets.QWizard):
 
     @property
     def param_data(self) -> dict:
-        data = {
-            field: self.field(field) for field in PARAMETER_FIELDS[self.selected]
-        }
+        data = {field: self.field(field) for field in PARAMETER_FIELDS[self.selected]}
         if self.selected == 2:
             data["group"] = bc.build_activity_group_name(self.key)
             data["database"] = self.key[0]
@@ -143,9 +140,7 @@ class CompleteParameterPage(QtWidgets.QWizardPage):
             dbs = bw.databases.list
             self.database.insertItems(0, dbs)
             if self.key[0] in dbs:
-                self.database.setCurrentIndex(
-                    dbs.index(self.key[0])
-                )
+                self.database.setCurrentIndex(dbs.index(self.key[0]))
             self.database.setHidden(False)
             self.database_label.setHidden(False)
         elif self.parent.selected == 2:

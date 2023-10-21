@@ -3,6 +3,7 @@ from PySide2.QtCore import QObject, Slot
 
 from activity_browser.bwutils import AB_metadata
 from activity_browser.signals import signals
+
 from ..ui.wizards.settings_wizard import SettingsWizard
 
 
@@ -10,6 +11,7 @@ class UtilitiesController(QObject):
     """The controller that handles all of the AB features that are not directly
     pulled from brightway.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.window = parent

@@ -2,8 +2,8 @@
 import brightway2 as bw
 from PySide2 import QtCore, QtWidgets
 
-from activity_browser.signals import signals
 from activity_browser.controllers.database import DatabaseController
+from activity_browser.signals import signals
 from activity_browser.ui.wizards.db_export_wizard import DatabaseExportWizard
 
 # TODO: Add fixture with small database to export.
@@ -11,7 +11,7 @@ from activity_browser.ui.wizards.db_export_wizard import DatabaseExportWizard
 
 def test_trigger_export_wizard(qtbot, ab_app, monkeypatch):
     """Test the triggers for the export wizard."""
-    assert bw.projects.current == 'pytest_project'
+    assert bw.projects.current == "pytest_project"
     qtbot.waitForWindowShown(ab_app.main_window)
 
     menu_bar = ab_app.main_window.menu_bar
@@ -37,6 +37,5 @@ def test_open_export_wizard(qtbot, ab_app):
 
     # And close it down
     qtbot.mouseClick(
-        wizard.button(QtWidgets.QWizard.CancelButton),
-        QtCore.Qt.LeftButton
+        wizard.button(QtWidgets.QWizard.CancelButton), QtCore.Qt.LeftButton
     )

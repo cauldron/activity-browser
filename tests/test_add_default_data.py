@@ -6,36 +6,32 @@ from activity_browser.signals import signals
 
 
 def test_add_default_data(qtbot, ab_app, monkeypatch):
-    assert bw.projects.current == 'default'
+    assert bw.projects.current == "default"
     qtbot.waitForWindowShown(ab_app.main_window)
     monkeypatch.setattr(
-        QtWidgets.QInputDialog, "getText",
-        staticmethod(lambda *args, **kwargs: ("pytest_project", True))
+        QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("pytest_project", True)),
     )
-    project_tab = ab_app.main_window.left_panel.tabs['Project']
+    project_tab = ab_app.main_window.left_panel.tabs["Project"]
     qtbot.mouseClick(
-        project_tab.projects_widget.new_project_button,
-        QtCore.Qt.LeftButton
+        project_tab.projects_widget.new_project_button, QtCore.Qt.LeftButton
     )
-    assert bw.projects.current == 'pytest_project'
+    assert bw.projects.current == "pytest_project"
 
     # The biosphere3 import finishes with a 'change_project' signal.
     with qtbot.waitSignal(signals.change_project, timeout=600000):
         qtbot.mouseClick(
-            project_tab.databases_widget.add_default_data_button,
-            QtCore.Qt.LeftButton
+            project_tab.databases_widget.add_default_data_button, QtCore.Qt.LeftButton
         )
 
 
 def test_select_biosphere(qtbot, ab_app):
-    """ Select the 'biosphere3' database from the databases table.
-    """
-    biosphere = 'biosphere3'
-    project_tab = ab_app.main_window.left_panel.tabs['Project']
+    """Select the 'biosphere3' database from the databases table."""
+    biosphere = "biosphere3"
+    project_tab = ab_app.main_window.left_panel.tabs["Project"]
     db_table = project_tab.databases_widget.table
-    dbs = [
-        db_table.model.index(i, 0).data() for i in range(db_table.rowCount())
-    ]
+    dbs = [db_table.model.index(i, 0).data() for i in range(db_table.rowCount())]
     assert biosphere in dbs
     act_bio_tabs = project_tab.activity_biosphere_tabs
     act_bio_tabs.open_or_focus_tab(biosphere)
@@ -53,17 +49,17 @@ def test_select_biosphere(qtbot, ab_app):
 
 
 def test_search_biosphere(qtbot, ab_app):
-    assert bw.projects.current == 'pytest_project'
-    project_tab = ab_app.main_window.left_panel.tabs['Project']
+    assert bw.projects.current == "pytest_project"
+    project_tab = ab_app.main_window.left_panel.tabs["Project"]
 
     act_bio_tabs = project_tab.activity_biosphere_tabs
-    act_bio_tabs.open_or_focus_tab('biosphere3')
-    act_bio_widget = act_bio_tabs.tabs['biosphere3']
+    act_bio_tabs.open_or_focus_tab("biosphere3")
+    act_bio_widget = act_bio_tabs.tabs["biosphere3"]
 
     initial_amount = act_bio_widget.table.rowCount()
     # Now search for a specific string
     with qtbot.waitSignal(act_bio_widget.search_box.returnPressed, timeout=1000):
-        qtbot.keyClicks(act_bio_widget.search_box, 'Pentanol')
+        qtbot.keyClicks(act_bio_widget.search_box, "Pentanol")
         qtbot.keyPress(act_bio_widget.search_box, QtCore.Qt.Key_Return)
     # We found some results!
     assert act_bio_widget.table.rowCount() > 0
@@ -72,8 +68,7 @@ def test_search_biosphere(qtbot, ab_app):
 
 
 def test_fail_open_biosphere(ab_app):
-    """ Specifically fail to open an activity tab for a biosphere flow
-    """
+    """Specifically fail to open an activity tab for a biosphere flow"""
     assert bw.projects.current == "pytest_project"
     activities_tab = ab_app.main_window.right_panel.tabs["Activity Details"]
     # Select any biosphere activity and emit signal to trigger opening the tab
@@ -83,20 +78,19 @@ def test_fail_open_biosphere(ab_app):
 
 
 def test_succceed_open_activity(ab_app):
-    """ Create a tiny test database with a production activity
-    """
+    """Create a tiny test database with a production activity"""
     assert bw.projects.current == "pytest_project"
     db = bw.Database("testdb")
     act_key = ("testdb", "act1")
-    db.write({
-        act_key: {
-            "name": "act1",
-            "unit": "kilogram",
-            "exchanges": [
-                {"input": act_key, "amount": 1, "type": "production"}
-            ]
+    db.write(
+        {
+            act_key: {
+                "name": "act1",
+                "unit": "kilogram",
+                "exchanges": [{"input": act_key, "amount": 1, "type": "production"}],
+            }
         }
-    })
+    )
     activities_tab = ab_app.main_window.right_panel.tabs["Activity Details"]
     # Select the activity and emit signal to trigger opening the tab
     act = bw.get_activity(act_key)

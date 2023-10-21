@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
+import logging
 from typing import Iterable
 
 import brightway2 as bw
-from bw2data.backends.peewee import ActivityDataset
-from bw2data import get_node
-import pandas as pd
 import numpy as np
-from PySide2.QtCore import QModelIndex, Slot, Qt
+import pandas as pd
+from bw2data import get_node
+from bw2data.backends.peewee import ActivityDataset
+from PySide2.QtCore import QModelIndex, Qt, Slot
 
 from activity_browser.bwutils import commontasks as bc
+from activity_browser.logger import ABHandler
 from activity_browser.signals import signals
+
 from .base import EditablePandasModel, PandasModel
 
-import logging
-from activity_browser.logger import ABHandler
-
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
 class CSGenericModel(EditablePandasModel):
-    """ Intermediate class to enable internal move functionality for the
+    """Intermediate class to enable internal move functionality for the
     reference flows and impact categories tables. The below flags and relocate functions
     are required to enable internal move.
 
@@ -29,8 +29,7 @@ class CSGenericModel(EditablePandasModel):
     """
 
     def flags(self, index):
-        """ Returns flags
-        """
+        """Returns flags"""
         if not index.isValid():
             return super().flags(index) | Qt.ItemIsDropEnabled
         if index.row() < len(self._dataframe):
@@ -38,7 +37,7 @@ class CSGenericModel(EditablePandasModel):
         return super().flags(index)
 
     def relocateRow(self, row_source, row_target) -> None:
-        """ Relocate a row.
+        """Relocate a row.
         Move a row in the table to another position and store the new dataframe
         """
         row_a, row_b = max(row_source, row_target), min(row_source, row_target)
@@ -48,23 +47,29 @@ class CSGenericModel(EditablePandasModel):
         if row_source > row_target:  # the row needs to be moved up
             pass
             # delete old row
-            self._dataframe = self._dataframe.drop(row_source, axis=0).reset_index(drop=True)
+            self._dataframe = self._dataframe.drop(row_source, axis=0).reset_index(
+                drop=True
+            )
             # insert data
-            self._dataframe = pd.DataFrame(np.insert(self._dataframe.values,
-                                                     row_target,
-                                                     values=data_source,
-                                                     axis=0),
-                                           columns=self.HEADERS)
+            self._dataframe = pd.DataFrame(
+                np.insert(
+                    self._dataframe.values, row_target, values=data_source, axis=0
+                ),
+                columns=self.HEADERS,
+            )
         elif row_source < row_target:  # the row needs to be moved down
             pass
             # insert data
-            self._dataframe = pd.DataFrame(np.insert(self._dataframe.values,
-                                                     row_target,
-                                                     values=data_source,
-                                                     axis=0),
-                                           columns=self.HEADERS)
+            self._dataframe = pd.DataFrame(
+                np.insert(
+                    self._dataframe.values, row_target, values=data_source, axis=0
+                ),
+                columns=self.HEADERS,
+            )
             # delete old row
-            self._dataframe = self._dataframe.drop(row_source, axis=0).reset_index(drop=True)
+            self._dataframe = self._dataframe.drop(row_source, axis=0).reset_index(
+                drop=True
+            )
 
         self.updated.emit()
         signals.calculation_setup_changed.emit()
@@ -72,9 +77,7 @@ class CSGenericModel(EditablePandasModel):
 
 
 class CSActivityModel(CSGenericModel):
-    HEADERS = [
-        "Amount", "Unit", "Product", "Activity", "Location", "Database"
-    ]
+    HEADERS = ["Amount", "Unit", "Product", "Activity", "Location", "Database"]
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -112,14 +115,20 @@ class CSActivityModel(CSGenericModel):
         if self.current_cs is None and name is None:
             raise ValueError("'name' cannot be None if no name is set")
         if name:
-            assert name in bw.calculation_setups, "Given calculation setup does not exist."
+            assert (
+                name in bw.calculation_setups
+            ), "Given calculation setup does not exist."
             self.current_cs = name
 
-        fus = bw.calculation_setups.get(self.current_cs, {}).get('inv', [])
-        df = pd.DataFrame([
-            self.build_row(key, amount) for func_unit in fus
-            for key, amount in func_unit.items()
-        ], columns=self.HEADERS)
+        fus = bw.calculation_setups.get(self.current_cs, {}).get("inv", [])
+        df = pd.DataFrame(
+            [
+                self.build_row(key, amount)
+                for func_unit in fus
+                for key, amount in func_unit.items()
+            ],
+            columns=self.HEADERS,
+        )
         # Drop rows where the fu key was invalid in some way.
         self._dataframe = df.dropna().reset_index(drop=True)
         self.key_col = self._dataframe.columns.get_loc("key")
@@ -137,7 +146,11 @@ class CSActivityModel(CSGenericModel):
             row.update({"Amount": amount, "key": key})
             return row
         except (TypeError, ActivityDataset.DoesNotExist):
-            log.error("Could not load key '{}' in Calculation Setup '{}'".format(str(key), self.current_cs))
+            log.error(
+                "Could not load key '{}' in Calculation Setup '{}'".format(
+                    str(key), self.current_cs
+                )
+            )
             return {}
 
     @Slot(name="deleteRows")
@@ -155,7 +168,9 @@ class CSActivityModel(CSGenericModel):
             k, v = zip(*fu.items())
             data.append(self.build_row(k[0], v[0]))
         if data:
-            self._dataframe = pd.concat([self._dataframe,pd.DataFrame(data)], ignore_index=True)
+            self._dataframe = pd.concat(
+                [self._dataframe, pd.DataFrame(data)], ignore_index=True
+            )
             self.updated.emit()
             signals.calculation_setup_changed.emit()
 
@@ -167,17 +182,22 @@ class CSMethodsModel(CSGenericModel):
         super().__init__(parent=parent)
         self.current_cs = None
         signals.calculation_setup_selected.connect(self.update_cs)
-        signals.method_deleted.connect(
-            lambda: self.update_cs(self.current_cs))
+        signals.method_deleted.connect(lambda: self.update_cs(self.current_cs))
 
     @property
     def methods(self) -> list:
-        return [] if self._dataframe is None else self._dataframe.loc[:, "method"].to_list()
+        return (
+            []
+            if self._dataframe is None
+            else self._dataframe.loc[:, "method"].to_list()
+        )
 
     @Slot(name="UpdateBWCalculationSetup")
     def update_cs(self, name: str = None) -> None:
         """Updates and syncs the bw.calculation_setups for the Impact categories. Removes any
-        Impact category from a calculation setup if it is not present in the current environment"""
+        Impact category from a calculation setup if it is not present in the current environment
+        """
+
         def filter_methods(cs):
             """Filters any methods out from the calculation setup if they aren't in bw.methods"""
             i = 0
@@ -190,31 +210,36 @@ class CSMethodsModel(CSGenericModel):
 
         if self.current_cs is not None or name is not None:
             self.current_cs = name
-            filter_methods(bw.calculation_setups[self.current_cs].get('ia', []))
+            filter_methods(bw.calculation_setups[self.current_cs].get("ia", []))
             self.sync(self.current_cs)
         else:
             for name, cs in bw.calculation_setups.items():
-                filter_methods(cs['ia'])
+                filter_methods(cs["ia"])
             self.sync()
 
     @Slot(str, name="syncModel")
     def sync(self, name: str = None) -> None:
         if name:
-            assert name in bw.calculation_setups, "Given calculation setup does not exist."
+            assert (
+                name in bw.calculation_setups
+            ), "Given calculation setup does not exist."
             self.current_cs = name
-            self._dataframe = pd.DataFrame([
-                self.build_row(method)
-                for method in bw.calculation_setups[self.current_cs].get("ia", [])
-            ], columns=self.HEADERS)
+            self._dataframe = pd.DataFrame(
+                [
+                    self.build_row(method)
+                    for method in bw.calculation_setups[self.current_cs].get("ia", [])
+                ],
+                columns=self.HEADERS,
+            )
         self.updated.emit()
 
     @staticmethod
     def build_row(method: tuple) -> dict:
         method_metadata = bw.methods[method]
         return {
-            "Name": ', '.join(method),
-            "Unit": method_metadata.get('unit', "Unknown"),
-            "# CFs": method_metadata.get('num_cfs', 0),
+            "Name": ", ".join(method),
+            "Unit": method_metadata.get("unit", "Unknown"),
+            "# CFs": method_metadata.get("num_cfs", 0),
             "method": method,
         }
 
@@ -230,7 +255,9 @@ class CSMethodsModel(CSGenericModel):
         old_methods = set(self.methods)
         data = [self.build_row(m) for m in new_methods if m not in old_methods]
         if data:
-            self._dataframe = pd.concat([self._dataframe, pd.DataFrame(data)], ignore_index=True)
+            self._dataframe = pd.concat(
+                [self._dataframe, pd.DataFrame(data)], ignore_index=True
+            )
             self.updated.emit()
             signals.calculation_setup_changed.emit()
 

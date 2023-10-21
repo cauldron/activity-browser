@@ -1,15 +1,15 @@
-from PySide2 import QtWidgets, QtCore
 import sys
 
-from ..panels import ABTab
+from PySide2 import QtCore, QtWidgets
+
+from ...signals import signals
 from ...ui.style import header
 from ...ui.utils import StdRedirector
-from ...signals import signals
+from ..panels import ABTab
 
 
 class DebugTab(ABTab):
-
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super(DebugTab, self).__init__(parent)
 
         self.log = QtWidgets.QPlainTextEdit(self)
@@ -17,7 +17,7 @@ class DebugTab(ABTab):
         sys.stderr = StdRedirector(self.log, sys.stderr)
 
         self.debug_display = QtWidgets.QVBoxLayout()
-        self.title = header('Program debugger output:')
+        self.title = header("Program debugger output:")
 
         self.debug_display.addWidget(self.title)
         self.debug_display.addWidget(self.log)

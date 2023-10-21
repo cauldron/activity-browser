@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from PySide2 import QtCore, QtWidgets
-from ...ui.icons import qicons
 
+from ...signals import signals
+from ...ui.icons import qicons
 from ...ui.style import header, horizontal_line
 from ...ui.tables import MethodCharacterizationFactorsTable, MethodsTable, MethodsTree
-from ...signals import signals
 from ..panels import ABTab
 
 
@@ -20,8 +20,10 @@ class MethodCharacterizationFactorsTab(QtWidgets.QWidget):
         self.hide_uncertainty.setChecked(True)
         self.read_only = True
         self.editable = QtWidgets.QCheckBox("Edit Characterization Factors")
-        self.editable.setToolTip("Make this impact category editable.\n"
-                                 "Please make a duplicate of this CF before modifying it.")
+        self.editable.setToolTip(
+            "Make this impact category editable.\n"
+            "Please make a duplicate of this CF before modifying it."
+        )
         self.editable.toggled.connect(self.cf_read_only_changed)
         toolbar = QtWidgets.QToolBar(self)
         toolbar.addWidget(self.hide_uncertainty)
@@ -49,14 +51,17 @@ class MethodCharacterizationFactorsTab(QtWidgets.QWidget):
         self.cf_read_only_changed(self.editable.isChecked())
 
     def cf_read_only_changed(self, editable: bool) -> None:
-        """ When read_only=False specific data fields in the tables below become user-editable
-                When read_only=True these same fields become read-only"""
+        """When read_only=False specific data fields in the tables below become user-editable
+        When read_only=True these same fields become read-only"""
         self.cf_table.read_only = self.read_only = not editable
-        self.cf_table.setAcceptDrops(editable)  # also re-evaluated when dragging something over the table
+        self.cf_table.setAcceptDrops(
+            editable
+        )  # also re-evaluated when dragging something over the table
         if editable:
             self.cf_table.setEditTriggers(QtWidgets.QTableView.DoubleClicked)
         else:
             self.cf_table.setEditTriggers(QtWidgets.QTableView.NoEditTriggers)
+
 
 class MethodsTab(QtWidgets.QWidget):
     def __init__(self, parent):
@@ -64,20 +69,26 @@ class MethodsTab(QtWidgets.QWidget):
 
         self.tree = MethodsTree(self)
         self.tree.setToolTip(
-            "Drag (groups of) impact categories to the calculation setup")
+            "Drag (groups of) impact categories to the calculation setup"
+        )
         self.table = MethodsTable(self)
         self.table.setToolTip(
-            "Drag (groups of) impact categories to the calculation setup")
+            "Drag (groups of) impact categories to the calculation setup"
+        )
         #
         self.search_box = QtWidgets.QLineEdit()
         self.search_box.setPlaceholderText("Search impact categories")
-        self.search_box.setToolTip("If a large number of matches is found the\n"
-                                   "tree is not expanded automatically.")
+        self.search_box.setToolTip(
+            "If a large number of matches is found the\n"
+            "tree is not expanded automatically."
+        )
         self.search_button = QtWidgets.QToolButton()
         self.search_button.setIcon(qicons.search)
-        self.search_button.setToolTip("Search impact categories.\n"
-                                      "If a large number of matches is found the\n"
-                                      "tree is not expanded automatically.")
+        self.search_button.setToolTip(
+            "Search impact categories.\n"
+            "If a large number of matches is found the\n"
+            "tree is not expanded automatically."
+        )
         self.reset_search_button = QtWidgets.QToolButton()
         self.reset_search_button.setIcon(qicons.delete)
         self.reset_search_button.setToolTip("Clear the search")
@@ -90,11 +101,11 @@ class MethodsTab(QtWidgets.QWidget):
             "    v climate change\n"
             "        CML 2001, climate change, GWP 100a\n"
             "        ...\n"
-            "You can drag entire 'branches' of impact categories at once")
+            "You can drag entire 'branches' of impact categories at once"
+        )
         #
         self.mode_radio_list = QtWidgets.QRadioButton("List view")
-        self.mode_radio_list.setToolTip(
-            "List view of impact categories")
+        self.mode_radio_list.setToolTip("List view of impact categories")
         #
         search_layout = QtWidgets.QHBoxLayout()
         search_layout.addWidget(self.search_box)
@@ -103,7 +114,7 @@ class MethodsTab(QtWidgets.QWidget):
         #
         mode_layout = QtWidgets.QHBoxLayout()
         mode_layout.setAlignment(QtCore.Qt.AlignTop)
-        mode_layout.addWidget(header('Impact Categories'))
+        mode_layout.addWidget(header("Impact Categories"))
         search_layout.addWidget(self.mode_radio_tree)
         search_layout.addWidget(self.mode_radio_list)
         #
@@ -125,11 +136,19 @@ class MethodsTab(QtWidgets.QWidget):
         self.reset_search_button.clicked.connect(self.table.sync)
         self.reset_search_button.clicked.connect(self.tree.model.sync)
 
-        self.search_button.clicked.connect(lambda: self.table.sync(query=self.search_box.text()))
-        self.search_button.clicked.connect(lambda: self.tree.model.sync(query=self.search_box.text()))
+        self.search_button.clicked.connect(
+            lambda: self.table.sync(query=self.search_box.text())
+        )
+        self.search_button.clicked.connect(
+            lambda: self.tree.model.sync(query=self.search_box.text())
+        )
         self.reset_search_button.clicked.connect(self.search_box.clear)
-        self.search_box.returnPressed.connect(lambda: self.table.sync(query=self.search_box.text()))
-        self.search_box.returnPressed.connect(lambda: self.tree.model.sync(query=self.search_box.text()))
+        self.search_box.returnPressed.connect(
+            lambda: self.table.sync(query=self.search_box.text())
+        )
+        self.search_box.returnPressed.connect(
+            lambda: self.tree.model.sync(query=self.search_box.text())
+        )
 
         signals.project_selected.connect(self.search_box.clear)
         self.connect_signals()
@@ -165,8 +184,8 @@ class CharacterizationFactorsTab(ABTab):
     def open_method_tab(self, method):
         if method not in self.tabs:
             new_tab = MethodCharacterizationFactorsTab(self, method)
-            full_tab_label = ' '.join(method)
-            label = full_tab_label[:min((10, len(full_tab_label)))] + '..'
+            full_tab_label = " ".join(method)
+            label = full_tab_label[: min((10, len(full_tab_label)))] + ".."
             self.tabs[method] = new_tab
             index = self.addTab(new_tab, label)
             self.setTabToolTip(index, full_tab_label)

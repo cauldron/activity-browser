@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
-from copy import deepcopy
+import logging
 import numbers
+from copy import deepcopy
 from typing import Iterator, Optional
 
-
 import brightway2 as bw
-from bw2data import get_node
 import numpy as np
 import pandas as pd
+from bw2data import get_node
 from PySide2.QtCore import QModelIndex, Qt, Slot
 from PySide2.QtWidgets import QMessageBox
 
-from activity_browser.signals import signals
-from ...wizards import UncertaintyWizard
-from .base import EditablePandasModel, DragPandasModel, TreeItem, BaseTreeModel
-
-import logging
 from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
 
-logger = logging.getLogger('ab_logs')
+from ...wizards import UncertaintyWizard
+from .base import BaseTreeModel, DragPandasModel, EditablePandasModel, TreeItem
+
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
@@ -28,7 +27,7 @@ class MethodsListModel(DragPandasModel):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.method_col = 0
-        self.different_column_types = {'# CFs': 'num'}
+        self.different_column_types = {"# CFs": "num"}
         signals.project_selected.connect(self.sync)
 
         # needed to trigger creation of self.filterable_columns, which relies on method_col existing
@@ -56,14 +55,15 @@ class MethodsListModel(DragPandasModel):
     def sync(self, query=None) -> None:
         sorted_names = sorted([(", ".join(method), method) for method in bw.methods])
         if query:
-            sorted_names = (
-                m for m in sorted_names if query.lower() in m[0].lower()
-            )
-        self._dataframe = pd.DataFrame([
-            self.build_row(method_obj) for method_obj in sorted_names
-        ], columns=self.HEADERS)
+            sorted_names = (m for m in sorted_names if query.lower() in m[0].lower())
+        self._dataframe = pd.DataFrame(
+            [self.build_row(method_obj) for method_obj in sorted_names],
+            columns=self.HEADERS,
+        )
         self.method_col = self._dataframe.columns.get_loc("method")
-        self.filterable_columns = {col: i for i, col in enumerate(self.HEADERS) if i is not self.method_col}
+        self.filterable_columns = {
+            col: i for i, col in enumerate(self.HEADERS) if i is not self.method_col
+        }
         self.updated.emit()
 
     @staticmethod
@@ -78,14 +78,15 @@ class MethodsListModel(DragPandasModel):
 
 
 class ImpactCategoryItem(TreeItem):
-    """ Item in MethodsTreeModel."""
+    """Item in MethodsTreeModel."""
+
     # this manual typing of COLUMNS below could be a risk later:
     # potential fix could be to get data from HEADERS in tables/impact_categories/MethodsTree
     def __init__(self, data: list, parent=None):
         super().__init__(data, parent)
 
     @classmethod
-    def build_item(cls, impact_cat, parent: TreeItem) -> 'ImpactCategoryItem':
+    def build_item(cls, impact_cat, parent: TreeItem) -> "ImpactCategoryItem":
         item = cls(list(impact_cat), parent)
         parent.appendChild(item)
         return item
@@ -101,6 +102,7 @@ class MethodsTreeModel(BaseTreeModel):
 
     for tree nested dict format see self.nest_data()
     """
+
     HEADERS = ["Name", "Unit", "# CFs", "method"]
 
     def __init__(self, parent=None):
@@ -129,7 +131,7 @@ class MethodsTreeModel(BaseTreeModel):
 
     @Slot(name="clearSyncModel")
     @Slot(str, name="syncModel")
-    def sync(self, query = None) -> None:
+    def sync(self, query=None) -> None:
         self.beginResetModel()
         self.root.clear()
         self.query = query
@@ -162,9 +164,10 @@ class MethodsTreeModel(BaseTreeModel):
         Trigger this at init and when a method is added/deleted.
         """
         sorted_names = sorted([(", ".join(method), method) for method in bw.methods])
-        self._dataframe = pd.DataFrame([
-            MethodsListModel.build_row(method_obj) for method_obj in sorted_names
-        ], columns=self.HEADERS)
+        self._dataframe = pd.DataFrame(
+            [MethodsListModel.build_row(method_obj) for method_obj in sorted_names],
+            columns=self.HEADERS,
+        )
         self.method_col = self._dataframe.columns.get_loc("method")
         # get the complete nested dict for the dataframe:
         self.tree_data = self.nest_data(self._dataframe)
@@ -218,7 +221,9 @@ class MethodsTreeModel(BaseTreeModel):
             #                 'climate change',
             #                 'GWP 100a'))]
             # so: [str, str, str, tuple(str, str, str, tuple(str, str, str))]
-            temp_row = list(row[-1])  # temp_row = tuple(str, str, str, tuple(str, str, str))
+            temp_row = list(
+                row[-1]
+            )  # temp_row = tuple(str, str, str, tuple(str, str, str))
             temp_row[0] = temp_row[-1][-1]  # in the example this would be 'GWP 100a'
             # temp_row[0] is taken from [-1][-1] and not from row[2] as there can be an arbitrary depth in the category
 
@@ -244,7 +249,7 @@ class MethodsTreeModel(BaseTreeModel):
     def get_method(self, tree_level: tuple) -> tuple:
         """Retrieve method data"""
         name = tree_level[1]
-        if tree_level[0] == 'branch':
+        if tree_level[0] == "branch":
             return tuple(tree_level[1])
         if not isinstance(name, str):
             name = ", ".join(tree_level[1])
@@ -254,11 +259,14 @@ class MethodsTreeModel(BaseTreeModel):
         return next(iter(methods))
 
     def get_methods(self, name: str) -> Iterator:
-        methods = self._dataframe.loc[self._dataframe["Name"].str.startswith(name), "method"]
+        methods = self._dataframe.loc[
+            self._dataframe["Name"].str.startswith(name), "method"
+        ]
         if self.query:
             queries = [
-                method for method in methods
-                if self.query.lower() in ', '.join(method).lower()
+                method
+                for method in methods
+                if self.query.lower() in ", ".join(method).lower()
             ]
             return queries
         return methods
@@ -285,7 +293,7 @@ class MethodsTreeModel(BaseTreeModel):
         for key, value in tree.items():
             if isinstance(value, tuple):
                 # this is a leaf node
-                if query.lower() not in ', '.join(value[-1]).lower():
+                if query.lower() not in ", ".join(value[-1]).lower():
                     # the query does not match
                     remove.append(key)
                 else:
@@ -294,7 +302,9 @@ class MethodsTreeModel(BaseTreeModel):
                 # this is not a leaf node
                 if query.lower() not in key.lower():
                     # the query does not match, go deeper
-                    sub_tree, matches = MethodsTreeModel.search_tree(value, query, matches)
+                    sub_tree, matches = MethodsTreeModel.search_tree(
+                        value, query, matches
+                    )
                     if len(sub_tree) > 0:
                         # there were query matches in this branch
                         tree[key] = sub_tree
@@ -317,10 +327,12 @@ class MethodCharacterizationFactorsModel(EditablePandasModel):
         super().__init__(parent=parent)
         self.cf_column = 0
         self.method: Optional[bw.Method] = None
-        self.different_column_types = {k: 'num' for k in self.UNCERTAINTY + ['Amount']}
+        self.different_column_types = {k: "num" for k in self.UNCERTAINTY + ["Amount"]}
         self.filterable_columns = {col: i for i, col in enumerate(self.HEADERS[:-1])}
         signals.method_modified.connect(self.sync)
-        self.dataChanged.connect(lambda: signals.cf_changed.emit())  # when a cell is changed, emit this signal
+        self.dataChanged.connect(
+            lambda: signals.cf_changed.emit()
+        )  # when a cell is changed, emit this signal
 
     @property
     def uncertain_cols(self) -> list:
@@ -334,9 +346,10 @@ class MethodCharacterizationFactorsModel(EditablePandasModel):
         if method:
             self.method = bw.Method(method)
         assert self.method is not None, "A method must be set."
-        self._dataframe = pd.DataFrame([
-            self.build_row(obj) for obj in self.method.load()
-        ], columns=self.HEADERS + self.UNCERTAINTY)
+        self._dataframe = pd.DataFrame(
+            [self.build_row(obj) for obj in self.method.load()],
+            columns=self.HEADERS + self.UNCERTAINTY,
+        )
         self.cf_column = self._dataframe.columns.get_loc("cf")
         self.updated.emit()
 
@@ -344,9 +357,7 @@ class MethodCharacterizationFactorsModel(EditablePandasModel):
     def build_row(cls, method_cf: tuple) -> dict:
         key, amount = method_cf[:2]
         flow = get_node(database=key[0], code=key[1])
-        row = {
-            cls.HEADERS[i]: flow.get(c) for i, c in enumerate(cls.COLUMNS)
-        }
+        row = {cls.HEADERS[i]: flow.get(c) for i, c in enumerate(cls.COLUMNS)}
         # If uncertain, unpack the uncertainty dictionary
         uncertain = not isinstance(amount, numbers.Number)
         if uncertain:
@@ -392,7 +403,11 @@ class MethodCharacterizationFactorsModel(EditablePandasModel):
         confirm = QMessageBox()
         confirm.setIcon(QMessageBox.Warning)
         confirm.setWindowTitle("Confirm deletion")
-        confirm.setText("Are you sure you want to delete "+str(len(to_delete))+" Characterization Factor(s) from this IC?")
+        confirm.setText(
+            "Are you sure you want to delete "
+            + str(len(to_delete))
+            + " Characterization Factor(s) from this IC?"
+        )
         confirm.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         confirmed = confirm.exec()
         if confirmed == QMessageBox.Ok:
@@ -431,7 +446,7 @@ class MethodCharacterizationFactorsModel(EditablePandasModel):
         if isinstance(data[1], dict):
             data[1].update(new_data)
         else:
-            if col_name == 'amount':
+            if col_name == "amount":
                 # if the new value we're writing is indeed 'amount', write that value, otherwise, just take the current
                 amt = new_val
             else:
@@ -445,5 +460,7 @@ class MethodCharacterizationFactorsModel(EditablePandasModel):
         filterable_cols = {col: i for i, col in enumerate(self.HEADERS[:-1])}
         if not hide:
             # also add the uncertainty columns
-            filterable_cols.update({col: i for col, i in zip(self.UNCERTAINTY, self.uncertain_cols)})
+            filterable_cols.update(
+                {col: i for col, i in zip(self.UNCERTAINTY, self.uncertain_cols)}
+            )
         self.filterable_columns = filterable_cols

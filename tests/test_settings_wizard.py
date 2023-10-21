@@ -3,8 +3,9 @@ import brightway2 as bw
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QMessageBox, QWizard
 
-from activity_browser.ui.wizards.settings_wizard import SettingsWizard
 from activity_browser.settings import ab_settings
+from activity_browser.ui.wizards.settings_wizard import SettingsWizard
+
 
 def test_settings_wizard_simple(qtbot, bw2test):
     """Test some of the default values of the wizard."""
@@ -51,13 +52,12 @@ def test_restore_defaults(qtbot, monkeypatch):
     # Follow-up from the last test, restore the startup_project to default
     assert wizard.field("startup_project") == "pytest_project"
 
-    with qtbot.waitSignal(wizard.settings_page.startup_project_combobox.currentIndexChanged, timeout=100):
+    with qtbot.waitSignal(
+        wizard.settings_page.startup_project_combobox.currentIndexChanged, timeout=100
+    ):
         # No handle the popup about changing the brightway2 directory.
         monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.No)
-        qtbot.mouseClick(
-            wizard.settings_page.restore_defaults_button,
-            Qt.LeftButton
-        )
+        qtbot.mouseClick(wizard.settings_page.restore_defaults_button, Qt.LeftButton)
 
     assert wizard.field("startup_project") == "default"
 

@@ -1,6 +1,5 @@
-
-from .panel import ABTab
 from ..tabs import DebugTab
+from .panel import ABTab
 
 
 class BottomPanel(ABTab):
@@ -9,9 +8,7 @@ class BottomPanel(ABTab):
     def __init__(self, *args):
         super(BottomPanel, self).__init__(*args)
 
-        self.tabs = {
-            "Debug": DebugTab(self)
-        }
+        self.tabs = {"Debug": DebugTab(self)}
         for tab_name, tab in self.tabs.items():
             self.addTab(tab, tab_name)
 

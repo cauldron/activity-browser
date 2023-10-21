@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
-import sys
 import importlib.util
+import logging
+import sys
 import traceback
 from pkgutil import iter_modules
 from shutil import rmtree
 
 from PySide2.QtCore import QObject, Slot
 
-from ..ui.wizards.plugins_manager_wizard import PluginsManagerWizard
-from ..signals import signals
-from ..settings import project_settings, ab_settings
-
-import logging
 from activity_browser.logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+from ..settings import ab_settings, project_settings
+from ..signals import signals
+from ..ui.wizards.plugins_manager_wizard import PluginsManagerWizard
+
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
 class PluginController(QObject):
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.window = parent
@@ -46,7 +45,7 @@ class PluginController(QObject):
     def discover_plugins(self):
         plugins = []
         for module in iter_modules():
-            if module.name.startswith('ab_plugin'):
+            if module.name.startswith("ab_plugin"):
                 plugins.append(module.name)
         return plugins
 
@@ -60,8 +59,7 @@ class PluginController(QObject):
             log.error("Error: Import of plugin {} failed".format(name), error=e)
 
     def add_plugin(self, name, select: bool = True):
-        """ add or reload tabs of the given plugin
-        """
+        """add or reload tabs of the given plugin"""
         if select:
             plugin = self.plugins[name]
             # Apply plugin load() function
@@ -82,9 +80,8 @@ class PluginController(QObject):
             panel.close_tab_by_tab_name(plugin.infos["name"])
 
     def reload_plugins(self):
-        """ close all plugins tabs then import all plugins tabs
-        """
-        plugins_list = [name for name in self.plugins.keys()]   # copy plugins list
+        """close all plugins tabs then import all plugins tabs"""
+        plugins_list = [name for name in self.plugins.keys()]  # copy plugins list
         for name in plugins_list:
             self.close_plugin_tabs(self.plugins[name])
         for name in project_settings.get_plugins_list():
@@ -94,7 +91,6 @@ class PluginController(QObject):
                 log.error(f"Error: plugin {name} not installed")
 
     def close_plugins(self):
-        """ close all plugins
-        """
+        """close all plugins"""
         for plugin in self.plugins.values():
             plugin.close()

@@ -8,7 +8,7 @@ from ...signals import signals
 class CopyDatabaseDialog(QtWidgets.QProgressDialog):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.setWindowTitle('Copying database')
+        self.setWindowTitle("Copying database")
         self.setModal(QtCore.Qt.ApplicationModal)
         self.setRange(0, 0)
 
@@ -19,12 +19,17 @@ class CopyDatabaseDialog(QtWidgets.QProgressDialog):
         if not all([copy_from, copy_to]):
             raise ValueError("Copy information not configured")
         if copy_from not in bw.databases:
-            raise ValueError("Database <strong>{}</strong> does not exist!".format(copy_from))
+            raise ValueError(
+                "Database <strong>{}</strong> does not exist!".format(copy_from)
+            )
         if copy_to in bw.databases:
-            raise ValueError("Database <strong>{}</strong> already exists!".format(copy_to))
+            raise ValueError(
+                "Database <strong>{}</strong> already exists!".format(copy_to)
+            )
         self.setLabelText(
-            'Copying existing database <b>{}</b> to new database <b>{}</b>:'.format(
-                copy_from, copy_to)
+            "Copying existing database <b>{}</b> to new database <b>{}</b>:".format(
+                copy_from, copy_to
+            )
         )
         self.thread.configure(copy_from, copy_to)
         self.thread.start()

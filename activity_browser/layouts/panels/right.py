@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
+import logging
 from pathlib import Path
 
 import brightway2 as bw
-from PySide2.QtWidgets import QVBoxLayout
 from bw2data import get_node
+from PySide2.QtWidgets import QVBoxLayout
 
-from .panel import ABTab
-from ...ui.web import GraphNavigatorWidget, RestrictedWebViewWidget
-from ..tabs import (
-    LCASetupTab,
-    LCAResultsTab,
-    CharacterizationFactorsTab,
-    ActivitiesTab,
-    ParametersTab
-)
-from ...bwutils.commontasks import get_activity_name
-from ...signals import signals
-
-import logging
 from activity_browser.logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+from ...bwutils.commontasks import get_activity_name
+from ...signals import signals
+from ...ui.web import GraphNavigatorWidget, RestrictedWebViewWidget
+from ..tabs import (
+    ActivitiesTab,
+    CharacterizationFactorsTab,
+    LCAResultsTab,
+    LCASetupTab,
+    ParametersTab,
+)
+from .panel import ABTab
+
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
@@ -46,11 +46,16 @@ class RightPanel(ABTab):
             self.tab_order[tab_name] = self.addTab(tab, tab_name)
 
         # tabs hidden at start
-        for tab_name in ["Activity Details", "Characterization Factors", "Graph Explorer", "LCA results"]:
+        for tab_name in [
+            "Activity Details",
+            "Characterization Factors",
+            "Graph Explorer",
+            "LCA results",
+        ]:
             self.hide_tab(tab_name)
 
     def show_tab(self, tab_name):
-        """ Re-inserts tab at the initial location.
+        """Re-inserts tab at the initial location.
 
         This avoids constantly re-ordering the mayor tabs.
         """
@@ -87,7 +92,12 @@ class GraphExplorerTab(ABTab):
             log.info("adding graph tab")
             new_tab = GraphNavigatorWidget(self, key=key)
             self.tabs[key] = new_tab
-            self.addTab(new_tab, get_activity_name(get_node(database=key[0], code=key[1]), str_length=30))
+            self.addTab(
+                new_tab,
+                get_activity_name(
+                    get_node(database=key[0], code=key[1]), str_length=30
+                ),
+            )
         else:
             tab = self.tabs[key]
             tab.new_graph(key)

@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*-
 import importlib.util
-import traceback
-import sys
 import shutil
+import sys
+import traceback
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from ..signals import signals
 from ..ui.icons import qicons
 from ..ui.menu_bar import MenuBar
 from ..ui.statusbar import Statusbar
 from ..ui.style import header
 from ..ui.utils import StdRedirector
-from .panels import LeftPanel, RightPanel, BottomPanel
-from ..signals import signals
+from .panels import BottomPanel, LeftPanel, RightPanel
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    DEFAULT_NO_METHOD = 'No method selected yet'
+    DEFAULT_NO_METHOD = "No method selected yet"
 
     def __init__(self, parent):
         super(MainWindow, self).__init__(None)
 
-        self.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates))
+        self.setLocale(
+            QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedStates)
+        )
         self.parent = parent
 
         # Window title
@@ -52,7 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.right_panel = RightPanel(self)
         self.bottom_panel = BottomPanel(self)
 
-        #Sets the minimum width for the right panel so scaling on Mac Screens doesnt go out of bounds
+        # Sets the minimum width for the right panel so scaling on Mac Screens doesnt go out of bounds
         self.right_panel.setMinimumWidth(100)
         self.bottom_panel.setMinimumHeight(100)
 
@@ -106,7 +108,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connect_signals()
         self.debug_window = False
 
-    def closeEvent(self,event):
+    def closeEvent(self, event):
         self.parent.close()
 
     def connect_signals(self):
@@ -121,11 +123,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bottom_panel.setVisible(self.debug_window)
 
     def add_tab_to_panel(self, obj, label, side):
-        panel = self.left_panel if side == 'left' else self.right_panel
+        panel = self.left_panel if side == "left" else self.right_panel
         panel.add_tab(obj, label)
 
     def select_tab(self, obj, side):
-        panel = self.left_panel if side == 'left' else self.right_panel
+        panel = self.left_panel if side == "left" else self.right_panel
         panel.setCurrentIndex(panel.indexOf(obj))
 
     def dialog(self, title, label):
@@ -150,7 +152,7 @@ class MainWindow(QtWidgets.QMainWindow):
             "Confirm Action",
             label,
             QtWidgets.QMessageBox.Yes,
-            QtWidgets.QMessageBox.No
+            QtWidgets.QMessageBox.No,
         )
         return response == QtWidgets.QMessageBox.Yes
 

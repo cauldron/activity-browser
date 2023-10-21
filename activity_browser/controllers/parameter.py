@@ -5,7 +5,7 @@ import brightway2 as bw
 from bw2data import get_node
 from bw2data.parameters import ActivityParameter, Group, ParameterBase
 from PySide2.QtCore import QObject, Slot
-from PySide2.QtWidgets import QInputDialog, QMessageBox, QErrorMessage
+from PySide2.QtWidgets import QErrorMessage, QInputDialog, QMessageBox
 
 from activity_browser.bwutils import commontasks as bc
 from activity_browser.signals import signals
@@ -23,7 +23,9 @@ class ParameterController(QObject):
         signals.parameter_modified.connect(self.modify_parameter)
         signals.rename_parameter.connect(self.rename_parameter)
         signals.delete_parameter.connect(self.delete_parameter)
-        signals.parameter_uncertainty_modified.connect(self.modify_parameter_uncertainty)
+        signals.parameter_uncertainty_modified.connect(
+            self.modify_parameter_uncertainty
+        )
         signals.parameter_pedigree_modified.connect(self.modify_parameter_pedigree)
         signals.clear_activity_parameter.connect(self.clear_broken_activity_parameter)
 
@@ -37,9 +39,11 @@ class ParameterController(QObject):
             selection = wizard.selected
             data = wizard.param_data
             name = data.get("name")
-            if name[0] in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', '#'):
+            if name[0] in ("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "-", "#"):
                 error = QErrorMessage()
-                error.showMessage("<p>Parameter names must not start with a digit, hyphen, or hash character</p>")
+                error.showMessage(
+                    "<p>Parameter names must not start with a digit, hyphen, or hash character</p>"
+                )
                 error.exec_()
                 return
             amount = str(data.get("amount"))
@@ -59,14 +63,15 @@ class ParameterController(QObject):
     @staticmethod
     @Slot(tuple, name="addActivityParameter")
     def auto_add_parameter(key: tuple) -> None:
-        """ Given the activity key, generate a new row with data from
+        """Given the activity key, generate a new row with data from
         the activity and immediately call `new_activity_parameters`.
         """
         act = get_node(database=key[0], code=key[1])
         prep_name = bc.clean_activity_name(act.get("name"))
         group = bc.build_activity_group_name(key, prep_name)
-        count = (ActivityParameter.select()
-                 .where(ActivityParameter.group == group).count())
+        count = (
+            ActivityParameter.select().where(ActivityParameter.group == group).count()
+        )
         row = {
             "name": "{}_{}".format(prep_name, count + 1),
             "amount": act.get("amount", 1.0),
@@ -99,7 +104,7 @@ class ParameterController(QObject):
 
     @Slot(object, name="deleteParameter")
     def delete_parameter(self, parameter: ParameterBase) -> None:
-        """ Remove the given parameter from the project.
+        """Remove the given parameter from the project.
 
         If there are multiple `ActivityParameters` for a single activity, only
         delete the selected instance, otherwise use `bw.parameters.remove_from_group`
@@ -108,10 +113,14 @@ class ParameterController(QObject):
         if isinstance(parameter, ActivityParameter):
             db = parameter.database
             code = parameter.code
-            amount = (ActivityParameter.select()
-                      .where((ActivityParameter.database == db) &
-                             (ActivityParameter.code == code))
-                      .count())
+            amount = (
+                ActivityParameter.select()
+                .where(
+                    (ActivityParameter.database == db)
+                    & (ActivityParameter.code == code)
+                )
+                .count()
+            )
 
             if amount > 1:
                 with bw.parameters.db.atomic():
@@ -121,8 +130,11 @@ class ParameterController(QObject):
                 act = bw.get_activity((db, code))
                 bw.parameters.remove_from_group(group, act)
                 # Also clear the group if there are no more parameters in it
-                exists = (ActivityParameter.select()
-                          .where(ActivityParameter.group == group).exists())
+                exists = (
+                    ActivityParameter.select()
+                    .where(ActivityParameter.group == group)
+                    .exists()
+                )
                 if not exists:
                     with bw.parameters.db.atomic():
                         Group.delete().where(Group.name == group).execute()
@@ -138,27 +150,33 @@ class ParameterController(QObject):
         """Remove all activity parameters and underlying exchange parameters
         for the given activity key.
         """
-        query = (ActivityParameter
-                 .select(ActivityParameter.group)
-                 .where((ActivityParameter.database == key[0]) &
-                        (ActivityParameter.code == key[1]))
-                 .tuples())
+        query = (
+            ActivityParameter.select(ActivityParameter.group)
+            .where(
+                (ActivityParameter.database == key[0])
+                & (ActivityParameter.code == key[1])
+            )
+            .tuples()
+        )
         if not query.exists():
             return
         groups = set(p[0] for p in query)
         for group in groups:
             bw.parameters.remove_from_group(group, key)
-            exists = (ActivityParameter.select()
-                      .where(ActivityParameter.group == group)
-                      .exists())
+            exists = (
+                ActivityParameter.select()
+                .where(ActivityParameter.group == group)
+                .exists()
+            )
             if not exists:
                 Group.delete().where(Group.name == group).execute()
         bw.parameters.recalculate()
         signals.parameters_changed.emit()
 
     @Slot(object, str, object, name="modifyParameter")
-    def modify_parameter(self, param: ParameterBase, field: str,
-                         value: Union[str, float, list]) -> None:
+    def modify_parameter(
+        self, param: ParameterBase, field: str, value: Union[str, float, list]
+    ) -> None:
         with bw.parameters.db.atomic() as transaction:
             try:
                 if hasattr(param, field):
@@ -179,8 +197,11 @@ class ParameterController(QObject):
                 # warning message.
                 transaction.rollback()
                 QMessageBox.warning(
-                    self.window, "Could not save changes", str(e),
-                    QMessageBox.Ok, QMessageBox.Ok
+                    self.window,
+                    "Could not save changes",
+                    str(e),
+                    QMessageBox.Ok,
+                    QMessageBox.Ok,
                 )
         signals.parameters_changed.emit()
 
@@ -195,7 +216,9 @@ class ParameterController(QObject):
         """
         text = "Rename parameter '{}' to:".format(param.name)
         new_name, ok = QInputDialog.getText(
-            self.window, "Rename parameter", text,
+            self.window,
+            "Rename parameter",
+            text,
         )
         if not ok or not new_name:
             return
@@ -211,8 +234,11 @@ class ParameterController(QObject):
             signals.parameter_renamed.emit(old_name, group, new_name)
         except Exception as e:
             QMessageBox.warning(
-                self.window, "Could not save changes", str(e),
-                QMessageBox.Ok, QMessageBox.Ok
+                self.window,
+                "Could not save changes",
+                str(e),
+                QMessageBox.Ok,
+                QMessageBox.Ok,
             )
 
     @staticmethod
@@ -243,14 +269,15 @@ class ParameterController(QObject):
         with bw.parameters.db.atomic() as txn:
             bw.parameters.remove_exchanges_from_group(group, None, False)
             ActivityParameter.delete().where(
-                ActivityParameter.database == database,
-                ActivityParameter.code == code
+                ActivityParameter.database == database, ActivityParameter.code == code
             ).execute()
             # Do commit to ensure .exists() call does not include deleted params
             txn.commit()
-            exists = (ActivityParameter.select()
-                      .where(ActivityParameter.group == group)
-                      .exists())
+            exists = (
+                ActivityParameter.select()
+                .where(ActivityParameter.group == group)
+                .exists()
+            )
             if not exists:
                 # Also clear Group if it is not in use anymore
                 Group.delete().where(Group.name == group).execute()

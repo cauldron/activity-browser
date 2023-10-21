@@ -7,9 +7,9 @@ import pytest
 from activity_browser import Application
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def ab_application():
-    """ Initialize the application and yield it. Cleanup the 'test' project
+    """Initialize the application and yield it. Cleanup the 'test' project
     after session is complete.
     """
     app = Application()
@@ -21,15 +21,15 @@ def ab_application():
         for _, db in bw.config.sqlite3_databases:
             if not db._database.is_closed():
                 db._database.close()
-    if 'pytest_project' in bw.projects:
-        bw.projects.delete_project('pytest_project', delete_dir=True)
+    if "pytest_project" in bw.projects:
+        bw.projects.delete_project("pytest_project", delete_dir=True)
     # finally, perform a cleanup of any remnants, mostly for local testing
     bw.projects.purge_deleted_directories()
 
 
 @pytest.fixture()
 def ab_app(qtbot, ab_application):
-    """ Function-level fixture which returns the session-level application.
+    """Function-level fixture which returns the session-level application.
     This is the actual fixture to be used in tests.
     """
     ab_application.show()
@@ -38,7 +38,7 @@ def ab_app(qtbot, ab_application):
 
 @pytest.fixture()
 def bw2test():
-    """ Similar to `bw2test` from bw2data.tests, but makes use of pytest
+    """Similar to `bw2test` from bw2data.tests, but makes use of pytest
     fixture setup/teardown mechanics.
 
     Allows tests to be performed in a perfectly clean project instead

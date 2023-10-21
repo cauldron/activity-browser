@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import brightway2 as bw
+import bw2io.data as data
 from bw2data.errors import ValidityError
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Signal, Slot
-import bw2io.data as data
-from ...signals import signals
 
-import logging
 from activity_browser.logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+from ...signals import signals
+
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
@@ -41,8 +43,13 @@ class BiosphereUpdater(QtWidgets.QProgressDialog):
 
 
 class UpdateBiosphereThread(QtCore.QThread):
-    PATCHES = [patch for patch in dir(data) if patch.startswith('add_ecoinvent') and patch.endswith('biosphere_flows')]
+    PATCHES = [
+        patch
+        for patch in dir(data)
+        if patch.startswith("add_ecoinvent") and patch.endswith("biosphere_flows")
+    ]
     progress = Signal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.total_patches = len(self.PATCHES)

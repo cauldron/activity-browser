@@ -5,7 +5,7 @@ from .controllers import controllers
 from .layouts import MainWindow
 from .logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
@@ -15,7 +15,11 @@ class Application(object):
 
         # Provide the log file path, so it is available for the Activity-Browser
         # debug window/text box
-        log.info("The Activity-Browser log file can be found at {}".format(log.log_file_path()))
+        log.info(
+            "The Activity-Browser log file can be found at {}".format(
+                log.log_file_path()
+            )
+        )
         # Instantiate all the controllers.
         # -> Ensure all controller instances have access to the MainWindow
         # object, this propagates the 'AB' icon to all controller-handled

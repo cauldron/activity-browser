@@ -1,32 +1,34 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import brightway2 as bw
 from bw2data.backends.peewee import sqlite3_lci_db
 from bw2data.parameters import Group
 from PySide2 import QtWidgets
-from PySide2.QtCore import QObject, Slot, Qt
+from PySide2.QtCore import QObject, Qt, Slot
+
+from activity_browser.logger import ABHandler
 
 from ..bwutils import commontasks as bc
 from ..bwutils.strategies import relink_exchanges_existing_db
+from ..settings import project_settings
+from ..signals import signals
 from ..ui.widgets import (
-    CopyDatabaseDialog, DatabaseLinkingDialog, DefaultBiosphereDialog,
-    BiosphereUpdater, DatabaseLinkingResultsDialog
+    BiosphereUpdater,
+    CopyDatabaseDialog,
+    DatabaseLinkingDialog,
+    DatabaseLinkingResultsDialog,
+    DefaultBiosphereDialog,
 )
 from ..ui.wizards.db_export_wizard import DatabaseExportWizard
 from ..ui.wizards.db_import_wizard import DatabaseImportWizard
-from ..settings import project_settings
-from ..signals import signals
 from .project import ProjectController
 
-import logging
-from activity_browser.logger import ABHandler
-
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
-
 class DatabaseController(QObject):
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.window = parent
@@ -60,7 +62,7 @@ class DatabaseController(QObject):
         - also see bw2data issue: https://bitbucket.org/cmutel/brightway2-data/issues/60/massive-sqlite-query-performance-decrease
         @LegacyCode?
         """
-        if bw.databases and not sqlite3_lci_db._database.get_indexes('activitydataset'):
+        if bw.databases and not sqlite3_lci_db._database.get_indexes("activitydataset"):
             log.info("creating missing sqlite indices")
             bw.Database(list(bw.databases)[-1])._add_indices()
 
@@ -71,14 +73,15 @@ class DatabaseController(QObject):
 
     @Slot(name="updateBiosphereDialog")
     def update_biosphere(self) -> None:
-        """ Open a popup with progression bar and run through the different
+        """Open a popup with progression bar and run through the different
         functions for adding ecoinvent biosphere flows.
         """
         ok = QtWidgets.QMessageBox.question(
-            self.window, "Update biosphere3?",
+            self.window,
+            "Update biosphere3?",
             "Updating the biosphere3 database cannot be undone!",
             QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Abort,
-            QtWidgets.QMessageBox.Abort
+            QtWidgets.QMessageBox.Abort,
         )
         if ok == QtWidgets.QMessageBox.Ok:
             dialog = BiosphereUpdater(self.window)
@@ -87,9 +90,7 @@ class DatabaseController(QObject):
     @Slot(name="addDatabase")
     def add_database(self):
         name, ok = QtWidgets.QInputDialog.getText(
-            self.window,
-            "Create new database",
-            "Name of new database:" + " " * 25
+            self.window, "Create new database", "Name of new database:" + " " * 25
         )
 
         if ok and name:
@@ -100,15 +101,16 @@ class DatabaseController(QObject):
                 signals.database_selected.emit(name)
             else:
                 QtWidgets.QMessageBox.information(
-                    self.window, "Not possible", "A database with this name already exists."
+                    self.window,
+                    "Not possible",
+                    "A database with this name already exists.",
                 )
 
     @Slot(str, QObject, name="copyDatabaseAction")
     def copy_database(self, name: str) -> None:
         new_name, ok = QtWidgets.QInputDialog.getText(
-            self.window,
-            "Copy {}".format(name),
-            "Name of new database:" + " " * 25)
+            self.window, "Copy {}".format(name), "Name of new database:" + " " * 25
+        )
         if ok and new_name:
             try:
                 # Attaching the created wizard to the class avoids the copying
@@ -125,8 +127,9 @@ class DatabaseController(QObject):
         ok = QtWidgets.QMessageBox.question(
             self.window,
             "Delete database?",
-            ("Are you sure you want to delete database '{}'? It has {} activity datasets").format(
-                name, bc.count_database_records(name))
+            (
+                "Are you sure you want to delete database '{}'? It has {} activity datasets"
+            ).format(name, bc.count_database_records(name)),
         )
         if ok == QtWidgets.QMessageBox.Yes:
             project_settings.remove_db(name)
@@ -148,12 +151,18 @@ class DatabaseController(QObject):
             QtWidgets.QApplication.setOverrideCursor(Qt.WaitCursor)
             for old, new in dialog.relink.items():
                 other = bw.Database(new)
-                failed, succeeded, examples = relink_exchanges_existing_db(db, old, other)
+                failed, succeeded, examples = relink_exchanges_existing_db(
+                    db, old, other
+                )
                 relinking_results[f"{old} --> {other.name}"] = (failed, succeeded)
             QtWidgets.QApplication.restoreOverrideCursor()
             if failed > 0:
                 QtWidgets.QApplication.restoreOverrideCursor()
-                relinking_dialog = DatabaseLinkingResultsDialog.present_relinking_results(self.window, relinking_results, examples)
+                relinking_dialog = (
+                    DatabaseLinkingResultsDialog.present_relinking_results(
+                        self.window, relinking_results, examples
+                    )
+                )
                 relinking_dialog.exec_()
                 activity = relinking_dialog.open_activity()
             QtWidgets.QApplication.restoreOverrideCursor()

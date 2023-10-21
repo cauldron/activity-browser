@@ -1,33 +1,36 @@
 # -*- coding: utf-8 -*-
 import itertools
+import logging
 from typing import Iterable
 
-from asteval import Interpreter
 import brightway2 as bw
 import pandas as pd
+from asteval import Interpreter
 from bw2data import get_node
-from bw2data.parameters import (ActivityParameter, DatabaseParameter, Group,
-                                ProjectParameter)
+from bw2data.parameters import (
+    ActivityParameter,
+    DatabaseParameter,
+    Group,
+    ProjectParameter,
+)
 from peewee import DoesNotExist
-from PySide2.QtCore import Slot, QModelIndex
+from PySide2.QtCore import QModelIndex, Slot
 
-from activity_browser.bwutils import commontasks as bc, uncertainty as uc
+from activity_browser.bwutils import commontasks as bc
+from activity_browser.bwutils import uncertainty as uc
+from activity_browser.logger import ABHandler
 from activity_browser.signals import signals
 from activity_browser.ui.wizards import UncertaintyWizard
+
 from .base import BaseTreeModel, EditablePandasModel, TreeItem
 
-import logging
-from activity_browser.logger import ABHandler
-
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
 class BaseParameterModel(EditablePandasModel):
     COLUMNS = []
-    UNCERTAINTY = [
-        "uncertainty type", "loc", "scale", "shape", "minimum", "maximum"
-    ]
+    UNCERTAINTY = ["uncertainty type", "loc", "scale", "shape", "minimum", "maximum"]
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -52,7 +55,7 @@ class BaseParameterModel(EditablePandasModel):
 
     @classmethod
     def parse_parameter(cls, parameter) -> dict:
-        """ Take the given Parameter object and extract data for a single
+        """Take the given Parameter object and extract data for a single
         row in the table dataframe
 
         If the parameter has uncertainty data, include this as well.
@@ -66,13 +69,12 @@ class BaseParameterModel(EditablePandasModel):
 
     @classmethod
     def columns(cls) -> list:
-        """ Combine COLUMNS, UNCERTAINTY and add 'parameter'.
-        """
+        """Combine COLUMNS, UNCERTAINTY and add 'parameter'."""
         return cls.COLUMNS + cls.UNCERTAINTY + ["parameter"]
 
     @classmethod
     def extract_uncertainty_data(cls, data: dict) -> dict:
-        """ This helper function can be used to extract specific uncertainty
+        """This helper function can be used to extract specific uncertainty
         columns from the parameter data
 
         See:
@@ -114,7 +116,7 @@ class BaseParameterModel(EditablePandasModel):
         column = proxy.column()
         if self._dataframe.columns[column] in BaseParameterModel.UNCERTAINTY:
             self.modify_uncertainty(proxy)
-        elif self._dataframe.columns[column] == 'name':
+        elif self._dataframe.columns[column] == "name":
             self.handle_parameter_rename(proxy)
 
 
@@ -122,9 +124,7 @@ class ProjectParameterModel(BaseParameterModel):
     COLUMNS = ["name", "amount", "formula", "comment"]
 
     def sync(self) -> None:
-        data = [
-            self.parse_parameter(p) for p in ProjectParameter.select()
-        ]
+        data = [self.parse_parameter(p) for p in ProjectParameter.select()]
         self._dataframe = pd.DataFrame(data, columns=self.columns())
         self.param_col = self._dataframe.columns.get_loc("parameter")
         self.comment_col = self._dataframe.columns.get_loc("comment")
@@ -132,9 +132,7 @@ class ProjectParameterModel(BaseParameterModel):
 
     @staticmethod
     def get_usable_parameters() -> Iterable[list]:
-        return (
-            [k, v, "project"] for k, v in ProjectParameter.static().items()
-        )
+        return ([k, v, "project"] for k, v in ProjectParameter.static().items())
 
     @staticmethod
     def get_interpreter() -> Interpreter:
@@ -151,9 +149,7 @@ class DatabaseParameterModel(BaseParameterModel):
         self.db_col = 0
 
     def sync(self) -> None:
-        data = [
-            self.parse_parameter(p) for p in DatabaseParameter.select()
-        ]
+        data = [self.parse_parameter(p) for p in DatabaseParameter.select()]
         self._dataframe = pd.DataFrame(data, columns=self.columns())
         self.db_col = self._dataframe.columns.get_loc("database")
         self.param_col = self._dataframe.columns.get_loc("parameter")
@@ -164,14 +160,12 @@ class DatabaseParameterModel(BaseParameterModel):
         return self.get_database(proxy), ""
 
     def get_group(self, proxy: QModelIndex = None) -> str:
-        """ Retrieve the group of the activity currently selected.
-        """
+        """Retrieve the group of the activity currently selected."""
         return self.get_database(proxy)
 
     @staticmethod
     def get_usable_parameters():
-        """ Include the project parameters, and generate database parameters.
-        """
+        """Include the project parameters, and generate database parameters."""
         project = ProjectParameterModel.get_usable_parameters()
         database = (
             [p.name, p.amount, "database ({})".format(p.database)]
@@ -180,13 +174,12 @@ class DatabaseParameterModel(BaseParameterModel):
         return itertools.chain(project, database)
 
     def get_database(self, proxy: QModelIndex = None) -> str:
-        """ Return the database name of the parameter currently selected.
-        """
+        """Return the database name of the parameter currently selected."""
         idx = self.proxy_to_source(proxy or self.parent().currentIndex())
         return self._dataframe.iat[idx.row(), self.db_col]
 
     def get_interpreter(self) -> Interpreter:
-        """ Take the interpreter from the ProjectParameterTable and add
+        """Take the interpreter from the ProjectParameterTable and add
         (potentially overwriting) all database symbols for the selected index.
         """
         interpreter = ProjectParameterModel.get_interpreter()
@@ -197,8 +190,16 @@ class DatabaseParameterModel(BaseParameterModel):
 
 class ActivityParameterModel(BaseParameterModel):
     COLUMNS = [
-        "name", "amount", "formula", "product", "activity", "location",
-        "group", "order", "key", "comment"
+        "name",
+        "amount",
+        "formula",
+        "product",
+        "activity",
+        "location",
+        "group",
+        "order",
+        "key",
+        "comment",
     ]
 
     def __init__(self, parent=None):
@@ -208,14 +209,14 @@ class ActivityParameterModel(BaseParameterModel):
         self.order_col = 0
 
     def sync(self) -> None:
-        """ Build a dataframe using the ActivityParameters set in brightway
-        """
+        """Build a dataframe using the ActivityParameters set in brightway"""
         generate = (
             self.parse_parameter(p)
-            for p in (ActivityParameter
-                      .select(ActivityParameter, Group.order)
-                      .join(Group, on=(ActivityParameter.group == Group.name))
-                      .namedtuples())
+            for p in (
+                ActivityParameter.select(ActivityParameter, Group.order)
+                .join(Group, on=(ActivityParameter.group == Group.name))
+                .namedtuples()
+            )
         )
         data = [x for x in generate if "key" in x]
         self._dataframe = pd.DataFrame(data, columns=self.columns())
@@ -230,8 +231,7 @@ class ActivityParameterModel(BaseParameterModel):
 
     @classmethod
     def parse_parameter(cls, parameter) -> dict:
-        """ Override the base method to add more steps.
-        """
+        """Override the base method to add more steps."""
         row = super().parse_parameter(parameter)
         # Combine the 'database' and 'code' fields of the parameter into a 'key'
         row["key"] = (parameter.database, parameter.code)
@@ -239,7 +239,9 @@ class ActivityParameterModel(BaseParameterModel):
             act = bw.get_activity(row["key"])
         except:
             # Can occur if an activity parameter exists for a removed activity.
-            log.info("Activity {} no longer exists, removing parameter.".format(row["key"]))
+            log.info(
+                "Activity {} no longer exists, removing parameter.".format(row["key"])
+            )
             signals.clear_activity_parameter.emit(
                 parameter.database, parameter.code, parameter.group
             )
@@ -257,22 +259,24 @@ class ActivityParameterModel(BaseParameterModel):
         signals.add_activity_parameter.emit(key)
 
     def get_activity_groups(self, proxy, ignore_groups: list = None) -> Iterable[str]:
-        """ Helper method to look into the Group and determine which if any
+        """Helper method to look into the Group and determine which if any
         other groups the current activity can depend on
         """
         db = self.get_key(proxy)[0]
         ignore_groups = ignore_groups or []
         return (
-            param.group for param in (ActivityParameter
-                                      .select(ActivityParameter.group)
-                                      .where(ActivityParameter.database == db)
-                                      .distinct())
+            param.group
+            for param in (
+                ActivityParameter.select(ActivityParameter.group)
+                .where(ActivityParameter.database == db)
+                .distinct()
+            )
             if param.group not in ignore_groups
         )
 
     @staticmethod
     def get_usable_parameters():
-        """ Include all types of parameters.
+        """Include all types of parameters.
 
         NOTE: This method does not take into account which formula is being
         edited, and therefore does not restrict which database or activity
@@ -286,8 +290,7 @@ class ActivityParameterModel(BaseParameterModel):
         return itertools.chain(database, activity)
 
     def get_group(self, proxy: QModelIndex = None) -> str:
-        """ Retrieve the group of the activity currently selected.
-        """
+        """Retrieve the group of the activity currently selected."""
         proxy = proxy or self.parent().currentIndex()
         idx = self.proxy_to_source(proxy)
         return self._dataframe.iat[idx.row(), self.group_col]
@@ -305,14 +308,14 @@ class ActivityParameterModel(BaseParameterModel):
 
 class ParameterItem(TreeItem):
     @classmethod
-    def build_header(cls, header: str, parent: TreeItem) -> 'ParameterItem':
+    def build_header(cls, header: str, parent: TreeItem) -> "ParameterItem":
         item = cls([header, "", "", ""], parent)
         parent.appendChild(item)
         return item
 
     @classmethod
-    def build_item(cls, param, parent: TreeItem) -> 'ParameterItem':
-        """ Depending on the parameter type, the group is changed, defaults to
+    def build_item(cls, param, parent: TreeItem) -> "ParameterItem":
+        """Depending on the parameter type, the group is changed, defaults to
         'project'.
 
         For Activity parameters, use a 'header' item as parent, create one
@@ -328,12 +331,17 @@ class ParameterItem(TreeItem):
         elif hasattr(param, "database"):
             group = param.database
 
-        item = cls([
-            getattr(param, "name", ""),
-            group,
-            getattr(param, "amount", 1.0),  # set to 1 instead of 0 as division by 0 causes problems
-            getattr(param, "formula", ""),
-        ], parent)
+        item = cls(
+            [
+                getattr(param, "name", ""),
+                group,
+                getattr(
+                    param, "amount", 1.0
+                ),  # set to 1 instead of 0 as division by 0 causes problems
+                getattr(param, "formula", ""),
+            ],
+            parent,
+        )
 
         # If the variable is found, we're working on an activity parameter
         if "database" in locals():
@@ -344,7 +352,7 @@ class ParameterItem(TreeItem):
 
     @classmethod
     def build_exchanges(cls, act_param, parent: TreeItem) -> None:
-        """ Take the given activity parameter, retrieve the matching activity
+        """Take the given activity parameter, retrieve the matching activity
         and construct tree-items for each exchange with a `formula` field.
         """
         act = bw.get_activity((act_param.database, act_param.code))
@@ -352,12 +360,15 @@ class ParameterItem(TreeItem):
         for exc in [exc for exc in act.exchanges() if "formula" in exc]:
             try:
                 act_input = bw.get_activity(exc.input)
-                item = cls([
-                    act_input.get("name"),
-                    parent.data(1),
-                    exc.amount,
-                    exc.get("formula"),
-                ], parent)
+                item = cls(
+                    [
+                        act_input.get("name"),
+                        parent.data(1),
+                        exc.amount,
+                        exc.get("formula"),
+                    ],
+                    parent,
+                )
                 parent.appendChild(item)
             except DoesNotExist as e:
                 # The exchange is coming from a deleted database, remove it
@@ -383,6 +394,7 @@ class ParameterTreeModel(BaseTreeModel):
         - Children of relevant activity parameter
         - No children
     """
+
     HEADERS = ["Name", "Group", "Amount", "Formula"]
 
     def __init__(self, parent=None):
@@ -392,8 +404,7 @@ class ParameterTreeModel(BaseTreeModel):
         signals.exchange_formula_changed.connect(self.parameterize_exchanges)
 
     def setup_model_data(self) -> None:
-        """ First construct the root, then process the data.
-        """
+        """First construct the root, then process the data."""
         for param in self._data.get("project", []):
             ParameterItem.build_item(param, self.root)
         for param in self._data.get("database", []):
@@ -409,23 +420,26 @@ class ParameterTreeModel(BaseTreeModel):
         self.beginResetModel()
         self.root.clear()
         self.endResetModel()
-        self._data.update({
-            "project": ProjectParameter.select().iterator(),
-            "database": DatabaseParameter.select().iterator(),
-            "activity": ActivityParameter.select().iterator(),
-        })
+        self._data.update(
+            {
+                "project": ProjectParameter.select().iterator(),
+                "database": DatabaseParameter.select().iterator(),
+                "activity": ActivityParameter.select().iterator(),
+            }
+        )
         self.setup_model_data()
         self.updated.emit()
 
     @Slot(tuple, name="parameterizeExchanges")
     def parameterize_exchanges(self, key: tuple) -> None:
-        """ Used whenever a formula is set on an exchange in an activity.
+        """Used whenever a formula is set on an exchange in an activity.
 
         If no `ActivityParameter` exists for the key, generate one immediately
         """
         group = bc.build_activity_group_name(key)
-        if not (ActivityParameter.select()
-                .where(ActivityParameter.group == group).count()):
+        if not (
+            ActivityParameter.select().where(ActivityParameter.group == group).count()
+        ):
             signals.add_activity_parameter.emit(key)
 
         act = get_node(database=key[0], code=key[1])

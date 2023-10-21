@@ -1,21 +1,26 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
-from bw2data.parameters import (ActivityParameter, DatabaseParameter, Group,
-                                ProjectParameter)
-from PySide2 import QtCore, QtWidgets
 import pytest
+from bw2data.parameters import (
+    ActivityParameter,
+    DatabaseParameter,
+    Group,
+    ProjectParameter,
+)
+from PySide2 import QtCore, QtWidgets
 
+from activity_browser.layouts.tabs.parameters import ParameterDefinitionTab
 from activity_browser.signals import signals
 from activity_browser.ui.tables.delegates import FormulaDelegate
 from activity_browser.ui.tables.parameters import (
-    ActivityParameterTable, DataBaseParameterTable,
-    ProjectParameterTable
+    ActivityParameterTable,
+    DataBaseParameterTable,
+    ProjectParameterTable,
 )
-from activity_browser.layouts.tabs.parameters import ParameterDefinitionTab
 
 
 def test_create_project_param(qtbot):
-    """ Create a single Project parameter.
+    """Create a single Project parameter.
 
     Does not user the overarching application due to mouseClick failing
     """
@@ -27,11 +32,13 @@ def test_create_project_param(qtbot):
     project_db_tab.build_tables()
     table = project_db_tab.project_table.get_table()
 
-    bw.parameters.new_project_parameters([
-        {"name": "param_1", "amount": 1.0},
-        {"name": "param_2", "amount": 1.0},
-        {"name": "param_3", "amount": 1.0},
-    ])
+    bw.parameters.new_project_parameters(
+        [
+            {"name": "param_1", "amount": 1.0},
+            {"name": "param_2", "amount": 1.0},
+            {"name": "param_3", "amount": 1.0},
+        ]
+    )
     table.model.sync()
     assert table.rowCount() == 3
 
@@ -42,15 +49,16 @@ def test_create_project_param(qtbot):
 
 
 def test_edit_project_param(qtbot, monkeypatch):
-    """ Edit the existing parameter to have new values.
-    """
+    """Edit the existing parameter to have new values."""
     table = ProjectParameterTable()
     qtbot.addWidget(table)
     table.model.sync()
 
     # Edit both the name and the amount of the first parameter.
     monkeypatch.setattr(
-        QtWidgets.QInputDialog, "getText", staticmethod(lambda *args, **kwargs: ("test_project", True))
+        QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("test_project", True)),
     )
     table.model.handle_parameter_rename(table.proxy_model.index(0, 0))
     table.model.setData(table.model.index(0, 1), 2.5)
@@ -70,8 +78,7 @@ def test_edit_project_param(qtbot, monkeypatch):
 
 
 def test_delete_project_param(qtbot):
-    """ Try and delete project parameters through the tab.
-    """
+    """Try and delete project parameters through the tab."""
     table = ProjectParameterTable()
     qtbot.addWidget(table)
     table.model.sync()
@@ -89,7 +96,7 @@ def test_delete_project_param(qtbot):
 
 
 def test_create_database_params(qtbot):
-    """ Create three database parameters
+    """Create three database parameters
 
     Does not user the overarching application due to mouseClick failing
     """
@@ -102,17 +109,22 @@ def test_create_database_params(qtbot):
 
     # Open the database foldout
     assert not project_db_tab.database_table.isHidden()
-    with qtbot.waitSignal(project_db_tab.show_database_params.stateChanged, timeout=1000):
+    with qtbot.waitSignal(
+        project_db_tab.show_database_params.stateChanged, timeout=1000
+    ):
         qtbot.mouseClick(project_db_tab.show_database_params, QtCore.Qt.LeftButton)
     assert project_db_tab.database_table.isHidden()
     project_db_tab.show_database_params.toggle()
 
     # Generate a few database parameters
-    bw.parameters.new_database_parameters([
-        {"name": "param_2", "amount": 1.0},
-        {"name": "param_3", "amount": 1.0},
-        {"name": "param_4", "amount": 1.0},
-    ], database="biosphere3")
+    bw.parameters.new_database_parameters(
+        [
+            {"name": "param_2", "amount": 1.0},
+            {"name": "param_3", "amount": 1.0},
+            {"name": "param_4", "amount": 1.0},
+        ],
+        database="biosphere3",
+    )
     table.model.sync()
 
     # First created parameter is named 'param_2'
@@ -128,17 +140,23 @@ def test_edit_database_params(qtbot, monkeypatch):
 
     # Fill rows with new variables
     monkeypatch.setattr(
-        QtWidgets.QInputDialog, "getText", staticmethod(lambda *args, **kwargs: ("test_db1", True))
+        QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("test_db1", True)),
     )
     table.model.handle_parameter_rename(table.proxy_model.index(0, 0))
     table.model.setData(table.model.index(0, 2), "test_project + 3.5")
     monkeypatch.setattr(
-        QtWidgets.QInputDialog, "getText", staticmethod(lambda *args, **kwargs: ("test_db2", True))
+        QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("test_db2", True)),
     )
     table.model.handle_parameter_rename(table.proxy_model.index(1, 0))
     table.model.setData(table.model.index(1, 2), "test_db1 ** 2")
     monkeypatch.setattr(
-        QtWidgets.QInputDialog, "getText", staticmethod(lambda *args, **kwargs: ("test_db3", True))
+        QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("test_db3", True)),
     )
     table.model.handle_parameter_rename(table.proxy_model.index(2, 0))
     table.model.setData(table.model.index(2, 1), "8.5")
@@ -147,15 +165,18 @@ def test_edit_database_params(qtbot, monkeypatch):
     # 5 + 3.5 = 8.5 -> 8.5 ** 2 = 72.25
     assert DatabaseParameter.get(name="test_db2").amount == 72.25
     # There are two parameters for `biosphere3` and one for `testdb`
-    assert (DatabaseParameter.select()
-            .where(DatabaseParameter.database == "biosphere3").count()) == 2
-    assert (DatabaseParameter.select()
-            .where(DatabaseParameter.database == "testdb").count()) == 1
+    assert (
+        DatabaseParameter.select()
+        .where(DatabaseParameter.database == "biosphere3")
+        .count()
+    ) == 2
+    assert (
+        DatabaseParameter.select().where(DatabaseParameter.database == "testdb").count()
+    ) == 1
 
 
 def test_delete_database_params(qtbot):
-    """ Attempt to delete a parameter.
-    """
+    """Attempt to delete a parameter."""
     project_db_tab = ParameterDefinitionTab()
     qtbot.addWidget(project_db_tab)
     project_db_tab.build_tables()
@@ -172,7 +193,7 @@ def test_delete_database_params(qtbot):
 
 
 def test_downstream_dependency(qtbot):
-    """ A database parameter uses a project parameter in its formula.
+    """A database parameter uses a project parameter in its formula.
 
     Means we can't delete it right?
     """
@@ -186,7 +207,7 @@ def test_downstream_dependency(qtbot):
 
 
 def test_create_activity_param(qtbot):
-    """ Create several activity parameters.
+    """Create several activity parameters.
 
     TODO: Figure out some way of performing a drag action between tables.
      Use method calls for now.
@@ -200,7 +221,9 @@ def test_create_activity_param(qtbot):
     # Open the order column just because we can
     col = table.model.order_col
     assert table.isColumnHidden(col)
-    with qtbot.waitSignal(project_db_tab.activity_table.parameter.stateChanged, timeout=1000):
+    with qtbot.waitSignal(
+        project_db_tab.activity_table.parameter.stateChanged, timeout=1000
+    ):
         qtbot.mouseClick(project_db_tab.activity_table.parameter, QtCore.Qt.LeftButton)
     assert not table.isColumnHidden(col)
 
@@ -223,7 +246,7 @@ def test_create_activity_param(qtbot):
 
 
 def test_edit_activity_param(qtbot, monkeypatch):
-    """ Alter names, amounts and formulas.
+    """Alter names, amounts and formulas.
 
     Introduce dependencies through formulas
     """
@@ -233,12 +256,16 @@ def test_edit_activity_param(qtbot, monkeypatch):
 
     # Fill rows with new variables
     monkeypatch.setattr(
-        QtWidgets.QInputDialog, "getText", staticmethod(lambda *args, **kwargs: ("edit_act_1", True))
+        QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("edit_act_1", True)),
     )
     table.model.handle_parameter_rename(table.proxy_model.index(0, 0))
     table.model.setData(table.model.index(0, 2), "test_db3 * 3")
     monkeypatch.setattr(
-        QtWidgets.QInputDialog, "getText", staticmethod(lambda *args, **kwargs: ("edit_act_2", True))
+        QtWidgets.QInputDialog,
+        "getText",
+        staticmethod(lambda *args, **kwargs: ("edit_act_2", True)),
     )
     table.model.handle_parameter_rename(table.proxy_model.index(1, 0))
     table.model.setData(table.model.index(1, 2), "edit_act_1 - 3")
@@ -258,15 +285,15 @@ def test_activity_order_edit(qtbot):
 
 
 @pytest.mark.parametrize(
-    "table_class", [
+    "table_class",
+    [
         ProjectParameterTable,
         DataBaseParameterTable,
         ActivityParameterTable,
-    ]
+    ],
 )
 def test_table_formula_delegates(qtbot, table_class):
-    """ Open the formula delegate to test all related methods within the table.
-    """
+    """Open the formula delegate to test all related methods within the table."""
     table = table_class()
     qtbot.addWidget(table)
     table.model.sync()
@@ -288,8 +315,7 @@ def test_table_formula_delegates(qtbot, table_class):
 
 
 def test_open_activity_tab(qtbot, ab_app):
-    """ Trigger an 'open tab and switch to' action for a parameter.
-    """
+    """Trigger an 'open tab and switch to' action for a parameter."""
     # First, look at the parameters tab
     panel = ab_app.main_window.right_panel
     param_tab = panel.tabs["Parameters"]
@@ -314,8 +340,7 @@ def test_open_activity_tab(qtbot, ab_app):
 
 
 def test_delete_activity_param(qtbot):
-    """ Remove activity parameters.
-    """
+    """Remove activity parameters."""
     project_db_tab = ParameterDefinitionTab()
     qtbot.addWidget(project_db_tab)
     project_db_tab.build_tables()

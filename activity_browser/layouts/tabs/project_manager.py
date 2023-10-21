@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 from PySide2 import QtCore, QtWidgets
 
-from ..panels import ABTab
-from ...ui.style import header
-from ...ui.icons import qicons
-from ...ui.tables import (
-    DatabasesTable,
-    ProjectListWidget,
-    ActivitiesBiosphereTable,
-)
 from ...signals import signals
+from ...ui.icons import qicons
+from ...ui.style import header
+from ...ui.tables import ActivitiesBiosphereTable, DatabasesTable, ProjectListWidget
+from ..panels import ABTab
+
 
 class ProjectTab(QtWidgets.QWidget):
     def __init__(self, parent):
@@ -43,7 +40,8 @@ class ProjectTab(QtWidgets.QWidget):
 
     def update_widgets(self):
         """Update widgets when a new database has been selected or the project has been changed.
-        Hide empty widgets (e.g. Biosphere Flows table when an inventory database is selected)."""
+        Hide empty widgets (e.g. Biosphere Flows table when an inventory database is selected).
+        """
         no_databases = len(self.activity_biosphere_tabs.tabs) == 0
 
         self.databases_widget.update_widget()
@@ -68,13 +66,11 @@ class ProjectsWidget(QtWidgets.QWidget):
 
         # Buttons
         self.new_project_button = QtWidgets.QPushButton(qicons.add, "New")
-        self.new_project_button.setToolTip('Make a new project')
+        self.new_project_button.setToolTip("Make a new project")
         self.copy_project_button = QtWidgets.QPushButton(qicons.copy, "Copy")
-        self.copy_project_button.setToolTip('Copy the project')
-        self.delete_project_button = QtWidgets.QPushButton(
-            qicons.delete, "Delete"
-        )
-        self.delete_project_button.setToolTip('Delete the project')
+        self.copy_project_button.setToolTip("Copy the project")
+        self.delete_project_button = QtWidgets.QPushButton(qicons.delete, "Delete")
+        self.delete_project_button.setToolTip("Delete the project")
 
         self.construct_layout()
         self.connect_signals()
@@ -88,7 +84,7 @@ class ProjectsWidget(QtWidgets.QWidget):
         h_widget = QtWidgets.QWidget()
         h_layout = QtWidgets.QHBoxLayout()
         h_layout.setAlignment(QtCore.Qt.AlignLeft)
-        h_layout.addWidget(header('Project:'))
+        h_layout.addWidget(header("Project:"))
         h_layout.addWidget(self.projects_list)
         h_layout.addWidget(self.new_project_button)
         h_layout.addWidget(self.copy_project_button)
@@ -101,9 +97,10 @@ class ProjectsWidget(QtWidgets.QWidget):
         layout.addWidget(h_widget)
         self.setLayout(layout)
 
-        self.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Maximum,
-            QtWidgets.QSizePolicy.Maximum)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Maximum
+            )
         )
 
 
@@ -115,8 +112,8 @@ class DatabaseWidget(QtWidgets.QWidget):
 
         # Temporary inclusion to explain things before checkbox is back
         self.label_change_readonly = QtWidgets.QLabel(
-            "To change a database from read-only to editable and back," +
-            " click on the checkbox in the table."
+            "To change a database from read-only to editable and back,"
+            + " click on the checkbox in the table."
         )
 
         # Buttons
@@ -124,9 +121,9 @@ class DatabaseWidget(QtWidgets.QWidget):
             qicons.import_db, "Add default data (biosphere flows and impact categories)"
         )
         self.new_database_button = QtWidgets.QPushButton(qicons.add, "New")
-        self.new_database_button.setToolTip('Make a new database')
+        self.new_database_button.setToolTip("Make a new database")
         self.import_database_button = QtWidgets.QPushButton(qicons.import_db, "Import")
-        self.import_database_button.setToolTip('Import a new database')
+        self.import_database_button.setToolTip("Import a new database")
 
         self._construct_layout()
         self._connect_signals()
@@ -180,8 +177,7 @@ class ActivityBiosphereTabs(ABTab):
         signals.project_selected.connect(self.close_all)
 
     def open_or_focus_tab(self, db_name: str) -> None:
-        """Put focus on tab, if not open yet, open it.
-        """
+        """Put focus on tab, if not open yet, open it."""
         # create the tab if it doesn't exist yet
         if not self.tabs.get(db_name, False):
             widget = ActivityBiosphereWidget(parent=self)
@@ -221,9 +217,10 @@ class ActivityBiosphereWidget(QtWidgets.QWidget):
         self.v_layout.addWidget(self.table)
         self.setLayout(self.v_layout)
 
-        self.table.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred,
-            QtWidgets.QSizePolicy.Maximum)
+        self.table.setSizePolicy(
+            QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
+            )
         )
 
     def reset_widget(self):

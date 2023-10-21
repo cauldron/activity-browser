@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import brightway2 as bw
-from bw2data import get_node
-from bw2data.errors import UnknownObject
-from bw2data.backends.peewee import ActivityDataset
-import pandas as pd
 import numpy as np
+import pandas as pd
+from bw2data import get_node
+from bw2data.backends.peewee import ActivityDataset
+from bw2data.errors import UnknownObject
+
+from activity_browser.logger import ABHandler
 
 from .commontasks import count_database_records
 
-import logging
-from activity_browser.logger import ABHandler
-
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 # todo: extend store over several projects
+
 
 def list_to_tuple(x) -> tuple:
     return tuple(x) if isinstance(x, list) else x
@@ -40,12 +42,13 @@ class MetaDataStore(object):
     index
 
     """
+
     def __init__(self):
         self.dataframe = pd.DataFrame()
         self.databases = set()
 
     def add_metadata(self, db_names_list: list) -> None:
-        """"Include data from the brightway databases.
+        """ "Include data from the brightway databases.
 
         Get metadata in form of a Pandas DataFrame for biosphere and
         technosphere databases for tables and additional aggregation.
@@ -67,12 +70,16 @@ class MetaDataStore(object):
 
         dfs = list()
         dfs.append(self.dataframe)
-        log.info('Current shape and databases in the MetaDataStore:', self.dataframe.shape, self.databases)
+        log.info(
+            "Current shape and databases in the MetaDataStore:",
+            self.dataframe.shape,
+            self.databases,
+        )
         for db_name in new:
             if db_name not in bw.databases:
-                raise ValueError('This database does not exist:', db_name)
+                raise ValueError("This database does not exist:", db_name)
 
-            log.info('Adding:', db_name)
+            log.info("Adding:", db_name)
             self.databases.add(db_name)
 
             # make a temporary DataFrame and index it by ('database', 'code') (like all brightway activities)
@@ -99,7 +106,9 @@ class MetaDataStore(object):
 
         # add this metadata to already existing metadata
         self.dataframe = pd.concat(dfs, sort=False)
-        self.dataframe.replace(np.nan, '', regex=True, inplace=True)  # replace 'nan' values with emtpy string
+        self.dataframe.replace(
+            np.nan, "", regex=True, inplace=True
+        )  # replace 'nan' values with emtpy string
         # print('Dimensions of the Metadata:', self.dataframe.shape)
 
     def update_metadata(self, key: tuple) -> None:
@@ -116,10 +125,12 @@ class MetaDataStore(object):
             The specific activity to update in the MetaDataStore
         """
         try:
-            act = get_node(database=key[0], code=key[1])  # if this does not work, it has been deleted (see except:).
+            act = get_node(
+                database=key[0], code=key[1]
+            )  # if this does not work, it has been deleted (see except:).
         except (UnknownObject, ActivityDataset.DoesNotExist):
             # Situation 1: activity has been deleted (metadata needs to be deleted)
-            log.warning('Deleting activity from metadata:', key)
+            log.warning("Deleting activity from metadata:", key)
             self.dataframe.drop(key, inplace=True)
             # print('Dimensions of the Metadata:', self.dataframe.shape)
             return
@@ -129,30 +140,35 @@ class MetaDataStore(object):
             # print('Database has not been added to metadata.')
             self.add_metadata([db])
         else:
-            if key in self.dataframe.index:  # Situation 2: activity has been modified (metadata needs to be updated)
-                log.info('Updating activity in metadata: ', act, key)
+            if (
+                key in self.dataframe.index
+            ):  # Situation 2: activity has been modified (metadata needs to be updated)
+                log.info("Updating activity in metadata: ", act, key)
                 for col in self.dataframe.columns:
-                    self.dataframe.at[key, col] = act.get(col, '')
-                self.dataframe.at[key, 'key'] = act.key
+                    self.dataframe.at[key, col] = act.get(col, "")
+                self.dataframe.at[key, "key"] = act.key
 
             else:  # Situation 3: Activity has been added to database (metadata needs to be generated)
-                log.info('Adding activity to metadata:', act, key)
-                df_new = pd.DataFrame([act.as_dict()], index=pd.MultiIndex.from_tuples([act.key]))
-                df_new['key'] = [act.key]
+                log.info("Adding activity to metadata:", act, key)
+                df_new = pd.DataFrame(
+                    [act.as_dict()], index=pd.MultiIndex.from_tuples([act.key])
+                )
+                df_new["key"] = [act.key]
                 self.dataframe = pd.concat([self.dataframe, df_new], sort=False)
-                self.dataframe.replace(np.nan, '', regex=True, inplace=True)  # replace 'nan' values with emtpy string
+                self.dataframe.replace(
+                    np.nan, "", regex=True, inplace=True
+                )  # replace 'nan' values with emtpy string
             # print('Dimensions of the Metadata:', self.dataframe.shape)
 
     def reset_metadata(self) -> None:
         """Deletes metadata when the project is changed."""
         # todo: metadata could be collected across projects...
-        log.info('Reset metadata.')
+        log.info("Reset metadata.")
         self.dataframe = pd.DataFrame()
         self.databases = set()
 
     def get_existing_fields(self, field_list: list) -> list:
-        """Return a list of fieldnames that exist in the current dataframe.
-        """
+        """Return a list of fieldnames that exist in the current dataframe."""
         return [fn for fn in field_list if fn in self.dataframe.columns]
 
     def get_metadata(self, keys: list, columns: list) -> pd.DataFrame:
@@ -185,7 +201,7 @@ class MetaDataStore(object):
             if count_database_records(db_name) == 0:
                 return pd.DataFrame()
             self.add_metadata([db_name])
-        return self.dataframe.loc[self.dataframe['database'] == db_name]
+        return self.dataframe.loc[self.dataframe["database"] == db_name]
 
     @property
     def index(self):
@@ -196,8 +212,7 @@ class MetaDataStore(object):
         return self.dataframe.index
 
     def get_locations(self, db_name: str) -> set:
-        """ Returns a set of locations for the given database name.
-        """
+        """Returns a set of locations for the given database name."""
         data = self.get_database_metadata(db_name)
         if "location" not in data.columns:
             return set()
@@ -205,8 +220,7 @@ class MetaDataStore(object):
         return set(locations[locations != ""])
 
     def get_units(self, db_name: str) -> set:
-        """ Returns a set of units for the given database name.
-        """
+        """Returns a set of units for the given database name."""
         data = self.get_database_metadata(db_name)
         if "unit" not in data.columns:
             return set()
@@ -214,18 +228,19 @@ class MetaDataStore(object):
         return set(units[units != ""])
 
     def print_convenience_information(self, db_name: str) -> None:
-        """ Reports how many unique locations and units the database has.
-        """
-        log.info("{} unique locations and {} unique units in {}".format(
-            len(self.get_locations(db_name)), len(self.get_units(db_name)),
-            db_name
-        ))
+        """Reports how many unique locations and units the database has."""
+        log.info(
+            "{} unique locations and {} unique units in {}".format(
+                len(self.get_locations(db_name)), len(self.get_units(db_name)), db_name
+            )
+        )
 
     def unpack_classifications(self, df: pd.DataFrame, systems: list) -> pd.DataFrame:
         """Unpack classifications column to a new column for every classification system in 'systems'.
 
         Will return dataframe with added column.
         """
+
         def unpacker(classifications: list, system: str) -> list:
             """Iterate over all 'c' lists in 'classifications'
             and add those matching 'system' to list 'x', when no matches, add empty string.
@@ -238,7 +253,7 @@ class MetaDataStore(object):
             """
             x = []
             for c in classifications:
-                cls = ''
+                cls = ""
                 if type(c) != list:
                     x.append(cls)
                     continue
@@ -248,7 +263,7 @@ class MetaDataStore(object):
                 x.append(cls)
             return x
 
-        classifications = list(df['classifications'].values)
+        classifications = list(df["classifications"].values)
         system_cols = []
         for system in systems:
             system_cols.append(unpacker(classifications, system))
@@ -257,8 +272,7 @@ class MetaDataStore(object):
 
         # Finally, merge the df with the new unpacked df using indexes
         df = pd.merge(
-            df, unpacked, how='inner', left_index=True,
-            right_index=True, sort=False
+            df, unpacked, how="inner", left_index=True, right_index=True, sort=False
         )
 
         return df

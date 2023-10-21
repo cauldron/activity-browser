@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-from copy import deepcopy
 import itertools
 import json
+import logging
 import os
+from copy import deepcopy
 from typing import Optional
 
 import brightway2 as bw
 import networkx as nx
+from bw2data import get_node
 from PySide2 import QtWidgets
 from PySide2.QtCore import Slot
-from bw2data import get_node
 
-from .base import BaseGraph, BaseNavigatorWidget
-from ...signals import signals
-from ...bwutils.commontasks import identify_activity_type
-
-import logging
 from activity_browser.logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+from ...bwutils.commontasks import identify_activity_type
+from ...signals import signals
+from .base import BaseGraph, BaseNavigatorWidget
+
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 # TODO:
@@ -67,12 +67,18 @@ class GraphNavigatorWidget(BaseNavigatorWidget):
         self.graph = Graph()
 
         # default settings
-        self.navigation_label = itertools.cycle(["Current mode: Expansion", "Current mode: Navigation"])
+        self.navigation_label = itertools.cycle(
+            ["Current mode: Expansion", "Current mode: Navigation"]
+        )
         self.selected_db = None
 
         self.button_navigation_mode = QtWidgets.QPushButton(next(self.navigation_label))
-        self.checkbox_direct_only = QtWidgets.QCheckBox("Add only direct up-/downstream exchanges")
-        self.checkbox_remove_orphaned_nodes = QtWidgets.QCheckBox("Remove orphaned nodes")
+        self.checkbox_direct_only = QtWidgets.QCheckBox(
+            "Add only direct up-/downstream exchanges"
+        )
+        self.checkbox_remove_orphaned_nodes = QtWidgets.QCheckBox(
+            "Remove orphaned nodes"
+        )
         self.checkbox_flip_negative_edges = QtWidgets.QCheckBox("Flip negative flows")
         self.layout = QtWidgets.QVBoxLayout()
 
@@ -91,7 +97,8 @@ class GraphNavigatorWidget(BaseNavigatorWidget):
     @Slot(name="loadFinishedHandler")
     def load_finished_handler(self) -> None:
         """Executed when webpage has been loaded for the first time or refreshed.
-        This is needed to resend the json data the first time after the page has completely loaded."""
+        This is needed to resend the json data the first time after the page has completely loaded.
+        """
         # print(time.time(), ": load finished")
         self.send_json()
 
@@ -102,8 +109,12 @@ class GraphNavigatorWidget(BaseNavigatorWidget):
         self.bridge.update_graph.connect(self.update_graph)
         # checkboxes
         self.checkbox_direct_only.stateChanged.connect(self.update_graph_settings)
-        self.checkbox_remove_orphaned_nodes.stateChanged.connect(self.update_graph_settings)
-        self.checkbox_flip_negative_edges.stateChanged.connect(self.update_graph_settings)
+        self.checkbox_remove_orphaned_nodes.stateChanged.connect(
+            self.update_graph_settings
+        )
+        self.checkbox_flip_negative_edges.stateChanged.connect(
+            self.update_graph_settings
+        )
         self.checkbox_flip_negative_edges.stateChanged.connect(self.reload_graph)
 
     def construct_layout(self) -> None:
@@ -113,17 +124,20 @@ class GraphNavigatorWidget(BaseNavigatorWidget):
         # checkbox all_exchanges_in_graph
         self.checkbox_direct_only.setChecked(True)
         self.checkbox_direct_only.setToolTip(
-            "When adding activities, show product flows between ALL activities or just selected up-/downstream flows")
+            "When adding activities, show product flows between ALL activities or just selected up-/downstream flows"
+        )
 
         # checkbox remove orphaned nodes
         self.checkbox_remove_orphaned_nodes.setChecked(True)
         self.checkbox_remove_orphaned_nodes.setToolTip(
-            "When removing activities, automatically remove those that have no further connection to the original product")
+            "When removing activities, automatically remove those that have no further connection to the original product"
+        )
 
         # checkbox flip negative edges
         self.checkbox_flip_negative_edges.setChecked(False)
         self.checkbox_flip_negative_edges.setToolTip(
-            "Flip negative product flows (e.g. from ecoinvent treatment activities or from substitution)")
+            "Flip negative product flows (e.g. from ecoinvent treatment activities or from substitution)"
+        )
         # Controls Layout
         hl_controls = QtWidgets.QHBoxLayout()
         hl_controls.addWidget(self.button_back)
@@ -197,7 +211,7 @@ class GraphNavigatorWidget(BaseNavigatorWidget):
             if keyboard["alt"]:  # delete node
                 log.info("Deleting node: ", key)
                 self.graph.reduce_graph(key)
-            else: # expansion mode
+            else:  # expansion mode
                 log.info("Expanding graph: ", key)
                 if keyboard["shift"]:  # downstream expansion
                     log.info("Adding downstream nodes.")
@@ -213,11 +227,13 @@ class GraphNavigatorWidget(BaseNavigatorWidget):
 
     @Slot(name="random_graph")
     def random_graph(self) -> None:
-        """ Show graph for a random activity in the currently loaded database."""
+        """Show graph for a random activity in the currently loaded database."""
         if self.selected_db:
             self.new_graph(bw.Database(self.selected_db).random().key)
         else:
-            QtWidgets.QMessageBox.information(None, "Not possible.", "Please load a database first.")
+            QtWidgets.QMessageBox.information(
+                None, "Not possible.", "Please load a database first."
+            )
 
 
 class Graph(BaseGraph):
@@ -253,7 +269,7 @@ class Graph(BaseGraph):
 
     @staticmethod
     def upstream_and_downstream_nodes(key: tuple) -> (list, list):
-        """Returns the upstream and downstream activity objects for a key. """
+        """Returns the upstream and downstream activity objects for a key."""
         activity = get_node(database=key[0], code=key[1])
         upstream_nodes = [ex.input for ex in activity.technosphere()]
         downstream_nodes = [ex.output for ex in activity.upstream()]
@@ -266,7 +282,9 @@ class Graph(BaseGraph):
         act.upstream refers to downstream exchanges; brightway is confused here)
         """
         activity = get_node(database=key[0], code=key[1])
-        return [ex for ex in activity.technosphere()], [ex for ex in activity.upstream()]
+        return [ex for ex in activity.technosphere()], [
+            ex for ex in activity.upstream()
+        ]
 
     @staticmethod
     def inner_exchanges(nodes: list) -> list:
@@ -274,8 +292,9 @@ class Graph(BaseGraph):
         node_keys = set(node.key for node in nodes)
         exchanges = itertools.chain(node.technosphere() for node in nodes)
         return [
-            ex for ex in exchanges if
-            all(k in node_keys for k in (ex["input"], ex["output"]))
+            ex
+            for ex in exchanges
+            if all(k in node_keys for k in (ex["input"], ex["output"]))
         ]
 
     def remove_outside_exchanges(self) -> None:
@@ -283,7 +302,9 @@ class Graph(BaseGraph):
         Ensures that all exchanges are exclusively between nodes of the graph
         (i.e. removes exchanges to previously existing nodes).
         """
-        self.edges = [e for e in self.edges if all(k in self.nodes for k in (e.input, e.output))]
+        self.edges = [
+            e for e in self.edges if all(k in self.nodes for k in (e.input, e.output))
+        ]
 
     def new_graph(self, key: tuple) -> None:
         """Creates a new JSON graph showing the up- and downstream activities for the activity key passed.
@@ -376,7 +397,8 @@ class Graph(BaseGraph):
         # checks each node in current dataset whether it is connected to central node
         # adds node_id of orphaned nodes to list
         orphaned_node_ids = (
-            node for node in G.nodes
+            node
+            for node in G.nodes
             if not nx.has_path(G, node, self.central_activity.key)
         )
 
@@ -399,7 +421,7 @@ class Graph(BaseGraph):
             edges: a list of edges (Exchange objects)
         Returns:
             A JSON representation of this.
-            """
+        """
         if not self.nodes:
             log.info("Graph has no nodes (activities).")
             return
@@ -450,8 +472,6 @@ class Graph(BaseGraph):
             "unit": exc.get("unit"),
             "product": reference,
             "tooltip": "<b>{:.3g} {} of {}<b>".format(
-                amount,
-                exc.get("unit", ""),
-                reference
-            )
+                amount, exc.get("unit", ""), reference
+            ),
         }

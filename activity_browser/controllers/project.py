@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import brightway2 as bw
-from PySide2.QtCore import QObject, Slot
 from PySide2 import QtWidgets
+from PySide2.QtCore import QObject, Slot
 
 from activity_browser.bwutils import commontasks as bc
+from activity_browser.logger import ABHandler
 from activity_browser.settings import ab_settings
 from activity_browser.signals import signals
-from activity_browser.ui.widgets import TupleNameDialog, ProjectDeletionDialog
+from activity_browser.ui.widgets import ProjectDeletionDialog, TupleNameDialog
 
-import logging
-from activity_browser.logger import ABHandler
-
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
@@ -19,6 +19,7 @@ class ProjectController(QObject):
     """The controller that handles all of the AB features on the level of
     a brightway project.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.window = parent
@@ -42,8 +43,8 @@ class ProjectController(QObject):
             log.info("Loading user settings:")
             self.switch_brightway2_dir_path(dirpath=ab_settings.current_bw_dir)
             self.change_project(ab_settings.startup_project)
-        log.info('Brightway2 data directory: {}'.format(bw.projects._base_data_dir))
-        log.info('Brightway2 active project: {}'.format(bw.projects.current))
+        log.info("Brightway2 data directory: {}".format(bw.projects._base_data_dir))
+        log.info("Brightway2 active project: {}".format(bw.projects.current))
 
     @staticmethod
     @Slot(str, name="changeProject")
@@ -51,7 +52,7 @@ class ProjectController(QObject):
         """Change the project, this clears all tabs and metadata related to
         the current project.
         """
-#        assert name, "No project name given."
+        #        assert name, "No project name given."
         name = "default" if not name else name
         if name not in bw.projects:
             log.info("Project does not exist: {}, creating!".format(name))
@@ -66,9 +67,7 @@ class ProjectController(QObject):
     def new_project(self, name=None):
         if name is None:
             name, ok = QtWidgets.QInputDialog.getText(
-                self.window,
-                "Create new project",
-                "Name of new project:" + " " * 25
+                self.window, "Create new project", "Name of new project:" + " " * 25
             )
             if not ok or not name:
                 return
@@ -79,8 +78,7 @@ class ProjectController(QObject):
             signals.projects_changed.emit()
         elif name in bw.projects:
             QtWidgets.QMessageBox.information(
-                self.window, "Not possible.",
-                "A project with this name already exists."
+                self.window, "Not possible.", "A project with this name already exists."
             )
 
     @Slot(name="copyProject")
@@ -88,7 +86,8 @@ class ProjectController(QObject):
         name, ok = QtWidgets.QInputDialog.getText(
             self.window,
             "Copy current project",
-            "Copy current project ({}) to new name:".format(bw.projects.current) + " " * 10
+            "Copy current project ({}) to new name:".format(bw.projects.current)
+            + " " * 10,
         )
         if ok and name:
             if name not in bw.projects:
@@ -97,8 +96,9 @@ class ProjectController(QObject):
                 signals.projects_changed.emit()
             else:
                 QtWidgets.QMessageBox.information(
-                    self.window, "Not possible.",
-                    "A project with this name already exists."
+                    self.window,
+                    "Not possible.",
+                    "A project with this name already exists.",
                 )
 
     @Slot(name="deleteProject")
@@ -109,7 +109,9 @@ class ProjectController(QObject):
             )
             return
 
-        delete_dialog = ProjectDeletionDialog.construct_project_deletion_dialog(self.window, bw.projects.current)
+        delete_dialog = ProjectDeletionDialog.construct_project_deletion_dialog(
+            self.window, bw.projects.current
+        )
 
         if delete_dialog.exec_() == ProjectDeletionDialog.Accepted:
             if delete_dialog.deletion_warning_checked():
@@ -126,6 +128,7 @@ class CSetupController(QObject):
     """The controller that handles brightway features related to
     calculation setups.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.window = parent
@@ -140,12 +143,12 @@ class CSetupController(QObject):
         name, ok = QtWidgets.QInputDialog.getText(
             self.window,
             "Create new calculation setup",
-            "Name of new calculation setup:" + " " * 10
+            "Name of new calculation setup:" + " " * 10,
         )
         if ok and name:
             if not self._can_use_cs_name(name):
                 return
-            bw.calculation_setups[name] = {'inv': [], 'ia': []}
+            bw.calculation_setups[name] = {"inv": [], "ia": []}
             signals.calculation_setup_selected.emit(name)
             log.info("New calculation setup: {}".format(name))
 
@@ -154,7 +157,7 @@ class CSetupController(QObject):
         new_name, ok = QtWidgets.QInputDialog.getText(
             self.window,
             "Copy '{}'".format(current),
-            "Name of the copied calculation setup:" + " " * 10
+            "Name of the copied calculation setup:" + " " * 10,
         )
         if ok and new_name:
             if not self._can_use_cs_name(new_name):
@@ -174,7 +177,7 @@ class CSetupController(QObject):
         new_name, ok = QtWidgets.QInputDialog.getText(
             self.window,
             "Rename '{}'".format(current),
-            "New name of this calculation setup:" + " " * 10
+            "New name of this calculation setup:" + " " * 10,
         )
         if ok and new_name:
             if not self._can_use_cs_name(new_name):
@@ -182,13 +185,16 @@ class CSetupController(QObject):
             bw.calculation_setups[new_name] = bw.calculation_setups[current].copy()
             del bw.calculation_setups[current]
             signals.calculation_setup_selected.emit(new_name)
-            log.info("Renamed calculation setup from {} to {}".format(current, new_name))
+            log.info(
+                "Renamed calculation setup from {} to {}".format(current, new_name)
+            )
 
     def _can_use_cs_name(self, new_name: str) -> bool:
         if new_name in bw.calculation_setups.keys():
             QtWidgets.QMessageBox.warning(
-                self.window, "Not possible",
-                "A calculation setup with this name already exists."
+                self.window,
+                "Not possible",
+                "A calculation setup with this name already exists.",
             )
             return False
         return True
@@ -211,8 +217,10 @@ class ImpactCategoryController(QObject):
         """Calls copy depending on the level, if level is 'leaf', or None,
         then a single method is copied. Otherwise sets are used to identify
         the appropriate methods"""
-        if level is not None and level != 'leaf':
-            methods = [bw.Method(mthd) for mthd in bw.methods if set(method).issubset(mthd)]
+        if level is not None and level != "leaf":
+            methods = [
+                bw.Method(mthd) for mthd in bw.methods if set(method).issubset(mthd)
+            ]
         else:
             methods = [bw.Method(method)]
         dialog = TupleNameDialog.get_combined_name(
@@ -221,28 +229,36 @@ class ImpactCategoryController(QObject):
         if dialog.exec_() == TupleNameDialog.Accepted:
             new_name = dialog.result_tuple
             for mthd in methods:
-                new_method = new_name + mthd.name[len(new_name)-1:]
+                new_method = new_name + mthd.name[len(new_name) - 1 :]
                 if new_method in bw.methods:
-                    warn = "Impact Category with name '{}' already exists!".format(new_method)
+                    warn = "Impact Category with name '{}' already exists!".format(
+                        new_method
+                    )
                     QtWidgets.QMessageBox.warning(self.window, "Copy failed", warn)
                     return
                 mthd.copy(new_method)
-                log.info("Copied method {} into {}".format(str(mthd.name), str(new_method)))
+                log.info(
+                    "Copied method {} into {}".format(str(mthd.name), str(new_method))
+                )
             signals.new_method.emit()
 
     @Slot(tuple, name="deleteMethod")
-    def delete_method(self, method_: tuple, level:str = None) -> None:
+    def delete_method(self, method_: tuple, level: str = None) -> None:
         """Call delete on the (first) selected method and present confirmation dialog."""
-        if level is not None and level != 'leaf':
-            methods = [bw.Method(mthd) for mthd in bw.methods if set(method_).issubset(mthd)]
+        if level is not None and level != "leaf":
+            methods = [
+                bw.Method(mthd) for mthd in bw.methods if set(method_).issubset(mthd)
+            ]
         else:
             methods = [bw.Method(method_)]
         method = bw.Method(method_)
         dialog = QtWidgets.QMessageBox()
         dialog.setWindowTitle("Are you sure you want to delete this method?")
-        dialog.setText("You are about to PERMANENTLY delete the following Impact Category:\n("
-                       +", ".join(method.name)+
-                       ")\nAre you sure you want to continue?")
+        dialog.setText(
+            "You are about to PERMANENTLY delete the following Impact Category:\n("
+            + ", ".join(method.name)
+            + ")\nAre you sure you want to continue?"
+        )
         dialog.setIcon(QtWidgets.QMessageBox.Warning)
         dialog.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         dialog.setDefaultButton(QtWidgets.QMessageBox.No)
@@ -259,15 +275,14 @@ class ImpactCategoryController(QObject):
         NOTE: Does not affect any selected CF that does not have uncertainty
         information.
         """
+
         def unset(cf: tuple) -> tuple:
             data = [*cf]
             data[1] = data[1].get("amount")
             return tuple(data)
 
         method = bw.Method(method)
-        modified_cfs = (
-            unset(cf) for cf in removed if isinstance(cf[1], dict)
-        )
+        modified_cfs = (unset(cf) for cf in removed if isinstance(cf[1], dict))
         cfs = method.load()
         for cf in modified_cfs:
             idx = next(i for i, c in enumerate(cfs) if c[0] == cf[0])
@@ -277,7 +292,7 @@ class ImpactCategoryController(QObject):
 
     @Slot(tuple, tuple, name="modifyMethodWithCf")
     def modify_method_with_cf(self, cf: tuple, method: tuple) -> None:
-        """ Take the given CF tuple, add it to the method object stored in
+        """Take the given CF tuple, add it to the method object stored in
         `self.method` and call .write() & .process() to finalize.
 
         NOTE: if the flow key matches one of the CFs in method, that CF
@@ -298,16 +313,19 @@ class ImpactCategoryController(QObject):
         method = bw.Method(method)
         cfs = method.load()
         # fill in default values for a new cf row
-        cfdata = (cf, {
-            'uncertainty type': 0,
-            'loc': float('nan'),
-            'scale': float('nan'),
-            'shape': float('nan'),
-            'minimum': float('nan'),
-            'maximum': float('nan'),
-            'negative': False,
-            'amount': 0
-        })
+        cfdata = (
+            cf,
+            {
+                "uncertainty type": 0,
+                "loc": float("nan"),
+                "scale": float("nan"),
+                "shape": float("nan"),
+                "minimum": float("nan"),
+                "maximum": float("nan"),
+                "negative": False,
+                "amount": 0,
+            },
+        )
         cfs.append(cfdata)
         method.write(cfs)
         signals.method_modified.emit(method.name)

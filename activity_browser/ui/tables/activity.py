@@ -2,14 +2,17 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Slot
 
+from ...signals import signals
+from ..icons import qicons
 from .delegates import *
 from .models import (
-    BaseExchangeModel, ProductExchangeModel, TechnosphereExchangeModel,
-    BiosphereExchangeModel, DownstreamExchangeModel,
+    BaseExchangeModel,
+    BiosphereExchangeModel,
+    DownstreamExchangeModel,
+    ProductExchangeModel,
+    TechnosphereExchangeModel,
 )
 from .views import ABDataFrameView
-from ..icons import qicons
-from ...signals import signals
 
 
 class BaseExchangeTable(ABDataFrameView):
@@ -19,9 +22,10 @@ class BaseExchangeTable(ABDataFrameView):
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(False)
-        self.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Preferred,
-            QtWidgets.QSizePolicy.Maximum)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy(
+                QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum
+            )
         )
 
         self.delete_exchange_action = QtWidgets.QAction(
@@ -42,14 +46,14 @@ class BaseExchangeTable(ABDataFrameView):
         self.key = getattr(parent, "key", None)
         self.model = self.MODEL(self.key, self)
         self.downstream = False
-        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers |
-                             QtWidgets.QAbstractItemView.DoubleClicked)
+        self.setEditTriggers(
+            QtWidgets.QAbstractItemView.NoEditTriggers
+            | QtWidgets.QAbstractItemView.DoubleClicked
+        )
         self._connect_signals()
 
     def _connect_signals(self):
-        self.doubleClicked.connect(
-            lambda: self.model.edit_cell(self.currentIndex())
-        )
+        self.doubleClicked.connect(lambda: self.model.edit_cell(self.currentIndex()))
         self.delete_exchange_action.triggered.connect(
             lambda: self.model.delete_exchanges(self.selectedIndexes())
         )
@@ -68,11 +72,9 @@ class BaseExchangeTable(ABDataFrameView):
         self.model.updated.connect(self.update_proxy_model)
         self.model.updated.connect(self.custom_view_sizing)
 
-
     @Slot(name="resizeView")
     def custom_view_sizing(self) -> None:
-        """ Ensure the `exchange` column is hidden whenever the table is shown.
-        """
+        """Ensure the `exchange` column is hidden whenever the table is shown."""
         super().custom_view_sizing()
         self.resizeColumnsToContents()
         self.resizeRowsToContents()
@@ -91,7 +93,7 @@ class BaseExchangeTable(ABDataFrameView):
         menu.exec_(event.globalPos())
 
     def dragMoveEvent(self, event) -> None:
-        """ For some reason, this method existing is required for allowing
+        """For some reason, this method existing is required for allowing
         dropEvent to occur _everywhere_ in the table.
         """
         pass
@@ -128,7 +130,7 @@ class ProductExchangeTable(BaseExchangeTable):
         menu.addAction(self.remove_formula_action)
         # Submenu copy to clipboard
         submenu_copy = QtWidgets.QMenu(menu)
-        submenu_copy.setTitle('Copy to clipboard')
+        submenu_copy.setTitle("Copy to clipboard")
         submenu_copy.setIcon(qicons.copy_to_clipboard)
         submenu_copy.addAction(self.copy_exchanges_for_SDF_action)
         menu.addMenu(submenu_copy)
@@ -136,12 +138,14 @@ class ProductExchangeTable(BaseExchangeTable):
         menu.exec_(event.globalPos())
 
     def dragEnterEvent(self, event):
-        """ Accept exchanges from a technosphere database table, and the
+        """Accept exchanges from a technosphere database table, and the
         technosphere exchanges table.
         """
         source = event.source()
-        if (getattr(source, "table_name", "") == "technosphere" or
-                getattr(source, "technosphere", False) is True):
+        if (
+            getattr(source, "table_name", "") == "technosphere"
+            or getattr(source, "technosphere", False) is True
+        ):
             event.accept()
 
 
@@ -159,14 +163,12 @@ class TechnosphereExchangeTable(BaseExchangeTable):
 
     @Slot(name="resizeView")
     def custom_view_sizing(self) -> None:
-        """ Ensure the `exchange` column is hidden whenever the table is shown.
-        """
+        """Ensure the `exchange` column is hidden whenever the table is shown."""
         super().custom_view_sizing()
         self.show_uncertainty()
 
     def show_uncertainty(self, show: bool = False) -> None:
-        """Show or hide the uncertainty columns, 'Uncertainty Type' is always shown.
-        """
+        """Show or hide the uncertainty columns, 'Uncertainty Type' is always shown."""
         cols = self.model.columns
         self.setColumnHidden(cols.index("Uncertainty"), not show)
         self.setColumnHidden(cols.index("pedigree"), not show)
@@ -174,8 +176,7 @@ class TechnosphereExchangeTable(BaseExchangeTable):
             self.setColumnHidden(cols.index(c), not show)
 
     def show_comments(self, show: bool = False) -> None:
-        """Show or hide the comment column.
-        """
+        """Show or hide the comment column."""
         cols = self.model.columns
         self.setColumnHidden(cols.index("Comment"), not show)
         super().custom_view_sizing()
@@ -192,7 +193,7 @@ class TechnosphereExchangeTable(BaseExchangeTable):
         menu.addAction(self.remove_uncertainty_action)
         # Submenu copy to clipboard
         submenu_copy = QtWidgets.QMenu(menu)
-        submenu_copy.setTitle('Copy to clipboard')
+        submenu_copy.setTitle("Copy to clipboard")
         submenu_copy.setIcon(qicons.copy_to_clipboard)
         submenu_copy.addAction(self.copy_exchanges_for_SDF_action)
         menu.addMenu(submenu_copy)
@@ -200,12 +201,13 @@ class TechnosphereExchangeTable(BaseExchangeTable):
         menu.exec_(event.globalPos())
 
     def dragEnterEvent(self, event):
-        """ Accept exchanges from a technosphere database table, and the
+        """Accept exchanges from a technosphere database table, and the
         downstream exchanges table.
         """
         source = event.source()
-        if (getattr(source, "table_name", "") == "downstream" or
-                hasattr(source, "technosphere")):
+        if getattr(source, "table_name", "") == "downstream" or hasattr(
+            source, "technosphere"
+        ):
             event.accept()
 
 
@@ -227,8 +229,7 @@ class BiosphereExchangeTable(BaseExchangeTable):
         self.show_uncertainty()
 
     def show_uncertainty(self, show: bool = False) -> None:
-        """Show or hide the uncertainty columns, 'Uncertainty Type' is always shown.
-        """
+        """Show or hide the uncertainty columns, 'Uncertainty Type' is always shown."""
         cols = self.model.columns
         self.setColumnHidden(cols.index("Uncertainty"), not show)
         self.setColumnHidden(cols.index("pedigree"), not show)
@@ -236,8 +237,7 @@ class BiosphereExchangeTable(BaseExchangeTable):
             self.setColumnHidden(cols.index(c), not show)
 
     def show_comments(self, show: bool = False) -> None:
-        """Show or hide the comment column.
-        """
+        """Show or hide the comment column."""
         cols = self.model.columns
         self.setColumnHidden(cols.index("Comment"), not show)
         super().custom_view_sizing()
@@ -254,7 +254,7 @@ class BiosphereExchangeTable(BaseExchangeTable):
 
         # Submenu copy to clipboard
         submenu_copy = QtWidgets.QMenu(menu)
-        submenu_copy.setTitle('Copy to clipboard')
+        submenu_copy.setTitle("Copy to clipboard")
         submenu_copy.setIcon(qicons.copy_to_clipboard)
         submenu_copy.addAction(self.copy_exchanges_for_SDF_action)
         menu.addMenu(submenu_copy)
@@ -262,16 +262,16 @@ class BiosphereExchangeTable(BaseExchangeTable):
         menu.exec_(event.globalPos())
 
     def dragEnterEvent(self, event):
-        """ Only accept exchanges from a technosphere database table
-        """
+        """Only accept exchanges from a technosphere database table"""
         if hasattr(event.source(), "technosphere"):
             event.accept()
 
 
 class DownstreamExchangeTable(BaseExchangeTable):
-    """ Downstream table class is very similar to technosphere table, just more
+    """Downstream table class is very similar to technosphere table, just more
     restricted.
     """
+
     MODEL = DownstreamExchangeModel
 
     def __init__(self, parent=None):

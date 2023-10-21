@@ -2,11 +2,9 @@
 from .activity import ActivityController, ExchangeController
 from .database import DatabaseController
 from .parameter import ParameterController
-from .project import (
-    ProjectController, CSetupController, ImpactCategoryController
-)
-from .utils import UtilitiesController
 from .plugin import PluginController
+from .project import CSetupController, ImpactCategoryController, ProjectController
+from .utils import UtilitiesController
 
 controllers = {
     "activity_controller": ActivityController,

@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
+import json
+import logging
+import os
 from abc import abstractmethod
 from copy import deepcopy
-import json
-import os
 from typing import Type
 
-from PySide2 import QtWebEngineWidgets, QtWebChannel, QtWidgets
-from PySide2.QtCore import Signal, Slot, QObject, Qt, QUrl
 from bw_processing import safe_filename
+from PySide2 import QtWebChannel, QtWebEngineWidgets, QtWidgets
+from PySide2.QtCore import QObject, Qt, QUrl, Signal, Slot
 
-from . import webutils
-from ... import utils
-from ...settings import ab_settings
-from ...ui.icons import qicons
-from ...signals import signals
-
-import logging
 from activity_browser.logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+from ... import utils
+from ...settings import ab_settings
+from ...signals import signals
+from ...ui.icons import qicons
+from . import webutils
+
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
@@ -37,7 +37,7 @@ class BaseNavigatorWidget(QtWidgets.QWidget):
         # Setup JS / Qt interactions
         self.bridge = Bridge(self)
         self.channel = QtWebChannel.QWebChannel()
-        self.channel.registerObject('bridge', self.bridge)
+        self.channel.registerObject("bridge", self.bridge)
         self.view = QtWebEngineWidgets.QWebEngineView()
         self.view.loadFinished.connect(self.load_finished_handler)
         self.view.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -112,7 +112,7 @@ def savefilepath(default_file_name: str, file_filter: str = ALL_FILTER):
     default = default_file_name or "Graph SVG Export"
     safe_name = safe_filename(default, add_hash=False)
     filepath, _ = QtWidgets.QFileDialog.getSaveFileName(
-        caption='Choose location to save svg',
+        caption="Choose location to save svg",
         dir=os.path.join(ab_settings.data_dir, safe_name),
         filter=file_filter,
     )
@@ -120,12 +120,12 @@ def savefilepath(default_file_name: str, file_filter: str = ALL_FILTER):
 
 
 def to_svg(svg):
-    """ Export to .svg format. """
+    """Export to .svg format."""
     # TODO: Exported filename
     filepath = savefilepath(default_file_name="svg_export", file_filter="SVG (*.svg)")
     if filepath:
-        if not filepath.endswith('.svg'):
-            filepath += '.svg'
+        if not filepath.endswith(".svg"):
+            filepath += ".svg"
         svg_file = open(filepath, "w", encoding="utf-8")
         svg_file.write(svg)
         svg_file.close()
@@ -138,20 +138,23 @@ class Bridge(QObject):
 
     @Slot(str, name="node_clicked")
     def node_clicked(self, click_text: str):
-        """ Is called when a node is clicked in Javascript.
+        """Is called when a node is clicked in Javascript.
         Args:
             click_text: string of a serialized json dictionary describing
             - the node that was clicked on
             - mouse button and additional keys pressed
         """
         click_dict = json.loads(click_text)
-        click_dict["key"] = (click_dict["database"], click_dict["id"])  # since JSON does not know tuples
-        log.info("Click information: ", click_dict) # TODO click_dict needs correcting
+        click_dict["key"] = (
+            click_dict["database"],
+            click_dict["id"],
+        )  # since JSON does not know tuples
+        log.info("Click information: ", click_dict)  # TODO click_dict needs correcting
         self.update_graph.emit(click_dict)
 
     @Slot(str, name="download_triggered")
     def download_triggered(self, svg: str):
-        """ Is called when a node is clicked in Javascript.
+        """Is called when a node is clicked in Javascript.
         Args:
             svg: string of svg
         """
@@ -188,7 +191,7 @@ class BaseGraph(object):
         return True
 
     def store_previous(self) -> None:
-        """Store the current graph in the """
+        """Store the current graph in the"""
         self.stack.append((deepcopy(self.json_data)))
 
     def store_future(self) -> None:
@@ -205,8 +208,8 @@ class BaseGraph(object):
         pass
 
     def save_json_to_file(self, filename: str = "graph_data.json") -> None:
-        """ Writes the current model´s JSON representation to the specifies file. """
+        """Writes the current model´s JSON representation to the specifies file."""
         if self.json_data:
             filepath = os.path.join(os.path.dirname(__file__), filename)
-            with open(filepath, 'w') as outfile:
+            with open(filepath, "w") as outfile:
                 json.dump(self.json_data, outfile)

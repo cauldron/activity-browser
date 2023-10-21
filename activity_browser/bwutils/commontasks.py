@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 import hashlib
+import logging
 import os
 import textwrap
 
 import arrow
 import brightway2 as bw
-from bw2data import databases, get_node, Database, methods
-from bw2data.proxies import ActivityProxyBase
+from bw2data import Database, databases, get_node, methods
 from bw2data.project import ProjectDataset, SubstitutableDatabase
+from bw2data.proxies import ActivityProxyBase
 
-import logging
 from activity_browser.logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 """
@@ -29,39 +29,67 @@ def wrap_text(string: str, max_length: int = 80) -> str:
 
     idea from https://stackoverflow.com/a/39134215/4929813
     """
+
     def fold(line: str) -> str:
-        return textwrap.fill(line, width=max_length, break_long_words=True,
-                             replace_whitespace=False)
-    return '\n'.join(map(fold, string.splitlines()))
+        return textwrap.fill(
+            line, width=max_length, break_long_words=True, replace_whitespace=False
+        )
+
+    return "\n".join(map(fold, string.splitlines()))
 
 
-def format_activity_label(key, style='pnl', max_length=40):
+def format_activity_label(key, style="pnl", max_length=40):
     try:
         act = get_node(database=key[0], code=key[1])
 
-        if style == 'pnl':
-            label = '\n'.join([act.get('reference product', ''), act.get('name', ''),
-                           str(act.get('location', ''))])
-        elif style == 'pnl_':
-            label = ' | '.join([act.get('reference product', ''), act.get('name', ''),
-                           str(act.get('location', ''))])
-        elif style == 'pnld':
-            label = ' | '.join([act.get('reference product', ''), act.get('name', ''),
-                           str(act.get('location', '')), act.get('database', ''),])
-        elif style == 'pl':
-            label = ', '.join([act.get('reference product', '') or act.get('name', ''),
-                                         str(act.get('location', '')),])
-        elif style == 'key':
+        if style == "pnl":
+            label = "\n".join(
+                [
+                    act.get("reference product", ""),
+                    act.get("name", ""),
+                    str(act.get("location", "")),
+                ]
+            )
+        elif style == "pnl_":
+            label = " | ".join(
+                [
+                    act.get("reference product", ""),
+                    act.get("name", ""),
+                    str(act.get("location", "")),
+                ]
+            )
+        elif style == "pnld":
+            label = " | ".join(
+                [
+                    act.get("reference product", ""),
+                    act.get("name", ""),
+                    str(act.get("location", "")),
+                    act.get("database", ""),
+                ]
+            )
+        elif style == "pl":
+            label = ", ".join(
+                [
+                    act.get("reference product", "") or act.get("name", ""),
+                    str(act.get("location", "")),
+                ]
+            )
+        elif style == "key":
             label = str(act.key)  # safer to use key, code does not always exist
 
-        elif style == 'bio':
-            label = ',\n'.join([act.get('name', ''), str(act.get('categories', ''))])
+        elif style == "bio":
+            label = ",\n".join([act.get("name", ""), str(act.get("categories", ""))])
         else:
-            label = '\n'.join([act.get('reference product', ''), act.get('name', ''),
-                           str(act.get('location', ''))])
+            label = "\n".join(
+                [
+                    act.get("reference product", ""),
+                    act.get("name", ""),
+                    str(act.get("location", "")),
+                ]
+            )
     except:
         if isinstance(key, tuple):
-            return wrap_text(str(''.join(key)))
+            return wrap_text(str("".join(key)))
         else:
             return wrap_text(str(key))
     return wrap_text(label, max_length=max_length)
@@ -72,7 +100,7 @@ def format_activity_label(key, style='pnl', max_length=40):
 def switch_brightway2_dir(dirpath):
     bw_base = bw.projects._base_data_dir
     if dirpath == bw_base:
-        log.info('dirpath already loaded')
+        log.info("dirpath already loaded")
         return False
     try:
         assert os.path.isdir(dirpath)
@@ -83,13 +111,14 @@ def switch_brightway2_dir(dirpath):
             os.mkdir(bw.projects._base_logs_dir)
         # load new brightway directory
         bw.projects.db = SubstitutableDatabase(
-            os.path.join(bw.projects._base_data_dir, "projects.db"),
-            [ProjectDataset]
+            os.path.join(bw.projects._base_data_dir, "projects.db"), [ProjectDataset]
         )
-        log.info('Loaded brightway2 data directory: {}'.format(bw.projects._base_data_dir))
+        log.info(
+            "Loaded brightway2 data directory: {}".format(bw.projects._base_data_dir)
+        )
         return True
     except AssertionError:
-        log.error('Could not access BW_DIR as specified in settings.py')
+        log.error("Could not access BW_DIR as specified in settings.py")
         return False
 
 
@@ -100,19 +129,19 @@ def cleanup_deleted_bw_projects() -> None:
     NOTE: This cannot be done from within the AB.
     """
     n_dir = bw.projects.purge_deleted_directories()
-    log.info('Deleted {} unused project directories!'.format(n_dir))
+    log.info("Deleted {} unused project directories!".format(n_dir))
 
 
 # Database
 def get_database_metadata(name):
-    """ Returns a dictionary with database meta-information. """
+    """Returns a dictionary with database meta-information."""
     d = dict()
-    d['Name'] = name
-    d['Depends'] = "; ".join(databases[name].get('depends', []))
-    dt = databases[name].get('modified', '')
+    d["Name"] = name
+    d["Depends"] = "; ".join(databases[name].get("depends", []))
+    dt = databases[name].get("modified", "")
     if dt:
         dt = arrow.get(dt).humanize()
-    d['Last modified'] = dt
+    d["Last modified"] = dt
     return d
 
 
@@ -158,11 +187,11 @@ bw_keys_to_AB_names = {v: k for k, v in AB_names_to_bw_keys.items()}
 
 
 def get_activity_name(key, str_length=22):
-    return ','.join(key.get('name', '').split(',')[:3])[:str_length]
+    return ",".join(key.get("name", "").split(",")[:3])[:str_length]
 
 
 def clean_activity_name(activity_name: str) -> str:
-    """ Takes a given activity name and remove or replace all characters
+    """Takes a given activity name and remove or replace all characters
     not allowed to be in there.
 
     Use this when creating parameters, as there are specific characters not
@@ -188,7 +217,7 @@ def clean_activity_name(activity_name: str) -> str:
 
 
 def build_activity_group_name(key: tuple, name: str = None) -> str:
-    """ Constructs a group name unique to a given bw activity.
+    """Constructs a group name unique to a given bw activity.
 
     If given a `name`, use that instead of looking up the activity name.
 
@@ -222,38 +251,44 @@ def identify_activity_type(activity):
 def get_exchanges_in_scenario_difference_file_notation(exchanges):
     """From a list of exchanges get the information needed for the scenario difference (SDF) file that is used in
     conjunction with the superstructure approach. This is a convenience function to export data from the AB in a format
-    suitable for the SDF. """
+    suitable for the SDF."""
     data = []
     for exc in exchanges:
         try:
-            from_act = get_node(database=exc.get('input')[0], code=exc.get('input')[1])
-            to_act = get_node(database=exc.get('output')[0], code=exc.get('output')[1])
+            from_act = get_node(database=exc.get("input")[0], code=exc.get("input")[1])
+            to_act = get_node(database=exc.get("output")[0], code=exc.get("output")[1])
 
             row = {
-                'from activity name': from_act.get('name', ''),
-                'from reference product': from_act.get('reference product', ''),
-                'from location': from_act.get('location', ''),
-                'from categories': from_act.get('categories', ''),
-                'from database': from_act.get('database', ''),
-                'from key': from_act.key,
-                'to activity name': to_act.get('name', ''),
-                'to reference product': to_act.get('reference product', ''),
-                'to location': to_act.get('location', ''),
-                'to categories': to_act.get('categories', ''),
-                'to database': to_act.get('database', ''),
-                'to key': to_act.key,
-                'flow type': exc.get('type', ''),
-                'amount': exc.get('amount', ''),
+                "from activity name": from_act.get("name", ""),
+                "from reference product": from_act.get("reference product", ""),
+                "from location": from_act.get("location", ""),
+                "from categories": from_act.get("categories", ""),
+                "from database": from_act.get("database", ""),
+                "from key": from_act.key,
+                "to activity name": to_act.get("name", ""),
+                "to reference product": to_act.get("reference product", ""),
+                "to location": to_act.get("location", ""),
+                "to categories": to_act.get("categories", ""),
+                "to database": to_act.get("database", ""),
+                "to key": to_act.key,
+                "flow type": exc.get("type", ""),
+                "amount": exc.get("amount", ""),
             }
             data.append(row)
 
         except:
             # The input activity does not exist. remove the exchange.
-            log.error("Something did not work with the following exchange: {}. It was removed from the list.".format(exc))
+            log.error(
+                "Something did not work with the following exchange: {}. It was removed from the list.".format(
+                    exc
+                )
+            )
     return data
 
 
-def get_exchanges_from_a_list_of_activities(activities: list, as_keys: bool = False) -> list:
+def get_exchanges_from_a_list_of_activities(
+    activities: list, as_keys: bool = False
+) -> list:
     """Get all exchanges in a list of activities."""
     if as_keys:
         activities = [get_node(database=key[0], code=key[1]) for key in activities]
@@ -279,5 +314,4 @@ def get_LCIA_method_name_dict(keys: list) -> dict:
         keys: comma separated strings
         values: brightway2 method tuples
     """
-    return {', '.join(key): key for key in keys}
-
+    return {", ".join(key): key for key in keys}

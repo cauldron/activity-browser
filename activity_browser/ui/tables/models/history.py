@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
 import pandas as pd
-from PySide2.QtCore import Slot, QModelIndex
 from bw2data import get_node
+from PySide2.QtCore import QModelIndex, Slot
 
 from activity_browser.bwutils import commontasks as bc
 from activity_browser.signals import signals
+
 from .base import PandasModel
 
 
@@ -36,13 +37,10 @@ class ActivitiesHistoryModel(PandasModel):
             # Data didn't exist, so build a new row with the key
             ds = get_node(database=key[0], code=key[1])
             data = {
-                h: ds.get(bc.AB_names_to_bw_keys.get(h), "")
-                for h in self.HEADERS[:-1]
+                h: ds.get(bc.AB_names_to_bw_keys.get(h), "") for h in self.HEADERS[:-1]
             }
             data["key"] = key
-            row = pd.DataFrame(
-                [data], index=[0], columns=self.HEADERS
-            )
+            row = pd.DataFrame([data], index=[0], columns=self.HEADERS)
 
         # Rebuild model with dataframe, added activity is placed at start
         self.sync(pd.concat([row, self._dataframe]).reset_index(drop=True))

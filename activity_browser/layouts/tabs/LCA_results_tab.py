@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
+import logging
 import traceback
 
 from bw2calc.errors import BW2CalcError
 from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QMessageBox, QVBoxLayout, QApplication
+from PySide2.QtWidgets import QApplication, QMessageBox, QVBoxLayout
 
-from .LCA_results_tabs import LCAResultsSubTab
-from ..panels import ABTab
-from ...signals import signals
-from ...bwutils.errors import ABError
-
-import logging
 from activity_browser.logger import ABHandler
 
-logger = logging.getLogger('ab_logs')
+from ...bwutils.errors import ABError
+from ...signals import signals
+from ..panels import ABTab
+from .LCA_results_tabs import LCAResultsSubTab
+
+logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
 
 
 class LCAResultsTab(ABTab):
     """Tab that contains subtabs for each calculation setup."""
+
     def __init__(self, parent):
         super(LCAResultsTab, self).__init__(parent)
 
@@ -40,19 +41,19 @@ class LCAResultsTab(ABTab):
 
     @Slot(str, name="removeSetup")
     def remove_setup(self, name: str):
-        """ When calculation setup is deleted in LCA Setup, remove the tab from LCA Results. """
+        """When calculation setup is deleted in LCA Setup, remove the tab from LCA Results."""
         if name in self.tabs:
             index = self.indexOf(self.tabs[name])
             self.close_tab(index)
 
     @Slot(str, name="generateSetup")
     def generate_setup(self, data: dict):
-        """ Check if the calculation results with this setup name exists, if it does, remove it, then create a new one. """
+        """Check if the calculation results with this setup name exists, if it does, remove it, then create a new one."""
 
-        cs_name = data.get('cs_name', 'new calculation')
-        calculation_type = data.get('calculation_type', 'simple')
+        cs_name = data.get("cs_name", "new calculation")
+        calculation_type = data.get("calculation_type", "simple")
 
-        if calculation_type == 'scenario':
+        if calculation_type == "scenario":
             name = "{}[Scenarios]".format(cs_name)
         else:
             name = cs_name
@@ -69,8 +70,11 @@ class LCAResultsTab(ABTab):
             log.error(traceback.format_exc())
             QApplication.restoreOverrideCursor()
             msg = QMessageBox(
-                QMessageBox.Warning, "Calculation problem", str(initial),
-                QMessageBox.Ok, self
+                QMessageBox.Warning,
+                "Calculation problem",
+                str(initial),
+                QMessageBox.Ok,
+                self,
             )
             msg.setWindowModality(Qt.ApplicationModal)
             if other:
