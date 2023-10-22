@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-import appdirs
+import platformdirs
 
 from .signals import signals
 
@@ -44,7 +44,7 @@ class ABHandler(object):
         logger: an object of type logging.Logger obtained in the calling module with getLogger()
         """
         name = logger.name + ABHandler.timestamp() + ".log"
-        dir_path = appdirs.user_log_dir("ActivityBrowser", "ActivityBrowser")
+        dir_path = platformdirs.user_log_dir("ActivityBrowser", "ActivityBrowser")
         os.makedirs(dir_path, exist_ok=True)
         ABHandler.clean_directory(dir_path)
         ABHandler.file_path = os.path.join(dir_path, name)
