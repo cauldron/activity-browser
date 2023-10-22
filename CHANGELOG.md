@@ -1,5 +1,9 @@
 # Changelog
 
+## BW 25 compatibility
+
+- Changed import of `safe_filename` to `bw_processing`
+
 ## [Unreleased]
 
 ### Added
