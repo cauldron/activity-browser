@@ -3,8 +3,8 @@ import functools
 import warnings
 from pathlib import Path
 
-import brightway2 as bw
-from bw2io import ExcelImporter
+import bw2data as bd
+from bw2io import ExcelImporter, BW2Package
 from bw2io.errors import InvalidPackage, StrategyError
 from bw2io.strategies import (
     assign_only_product_as_production,
@@ -72,7 +72,7 @@ class ABExcelImporter(ExcelImporter):
             set_code_by_activity_hash,
             functools.partial(
                 link_iterable_by_fields,
-                other=bw.Database(bw.config.biosphere),
+                other=bd.Database(bd.config.biosphere),
                 kind="biosphere",
             ),
             assign_only_product_as_production,
@@ -124,7 +124,7 @@ class ABExcelImporter(ExcelImporter):
         return [db]
 
 
-class ABPackage(bw.BW2Package):
+class ABPackage(BW2Package):
     """Inherits from brightway2 `BW2Package` and handles importing BW2Packages.
 
     This implementation is done to raise exceptions and show errors on imports
