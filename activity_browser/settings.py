@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 from typing import Optional
 
-import appdirs
+import platformdirs
 import brightway2 as bw
 from PySide2.QtWidgets import QMessageBox
 
@@ -58,15 +58,15 @@ class BaseSettings(object):
 
 class ABSettings(BaseSettings):
     """
-    Interface to the json settings file. Will create a userdata directory via appdirs if not
+    Interface to the json settings file. Will create a userdata directory via platformdirs if not
     already present.
     """
 
     def __init__(self, filename: str):
-        ab_dir = appdirs.AppDirs("ActivityBrowser", "ActivityBrowser")
-        if not os.path.isdir(ab_dir.user_data_dir):
-            os.makedirs(ab_dir.user_data_dir, exist_ok=True)
-        self.update_old_settings(ab_dir.user_data_dir, filename)
+        ab_dir = platformdirs.user_data_dir("ActivityBrowser", "ActivityBrowser")
+        if not os.path.isdir(ab_dir):
+            os.makedirs(ab_dir, exist_ok=True)
+        self.update_old_settings(ab_dir, filename)
 
         # Currently loaded plugins objects as:
         # {plugin_name: <plugin_object>, ...}
@@ -74,7 +74,7 @@ class ABSettings(BaseSettings):
         # it is filled by the plugin controller
         self.plugins = {}
 
-        super().__init__(ab_dir.user_data_dir, filename)
+        super().__init__(ab_dir, filename)
 
     @staticmethod
     def update_old_settings(directory: str, filename: str) -> None:

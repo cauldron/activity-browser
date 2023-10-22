@@ -21,20 +21,21 @@ requirements:
     - python
     - setuptools
   run:
-    - python >=3.8,<3.10
     - arrow
     - brightway2 >=2.4.4
     - bw_processing
-    - pyperclip
     - eidl >=1.4.2
+    - libxml2 <=2.10.4
     - networkx
-    - pyside2 >=5.15.5
-    - qt-webengine
     - numpy =1.23.5
+    - pint <=0.21
+    - platformdirs
+    - pyperclip
+    - pyside2 >=5.15.5
+    - python >=3.8,<3.10
+    - qt-webengine
     - salib >=1.4
     - seaborn
-    - libxml2 <=2.10.4
-    - pint <=0.21
 
 about:
   home: https://github.com/LCA-ActivityBrowser/activity-browser
