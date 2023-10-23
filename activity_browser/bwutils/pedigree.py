@@ -15,6 +15,7 @@ smoothly into the related uncertainty distributions.
 from pprint import pformat
 import math
 
+# BW25: ignore
 from bw2data.parameters import ParameterBase
 from bw2data.proxies import ExchangeProxyBase
 

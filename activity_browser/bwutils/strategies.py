@@ -3,8 +3,10 @@ import hashlib
 import logging
 from typing import Collection
 
-import brightway2 as bw
-from bw2data.backends.peewee import ActivityDataset, sqlite3_lci_db
+# BW25: ignore
+# But in the future this could be simplified or incorporated in bw2io
+from bw2data import get_activity, Database
+from bw2data.backends import ActivityDataset, sqlite3_lci_db
 from bw2data.errors import ValidityError
 from bw2io.errors import StrategyError
 from bw2io.strategies.generic import format_nonunique_key_error, link_iterable_by_fields
@@ -31,7 +33,7 @@ def relink_exchanges_dbs(data: Collection, relink: dict) -> Collection:
                 new_key = (relink[input_key[0]], input_key[1])
                 try:
                     # try and find the new key
-                    _ = bw.get_activity(new_key)
+                    _ = get_activity(new_key)
                     exc["input"] = new_key
                 except ActivityDataset.DoesNotExist as e:
                     raise ValueError(
@@ -61,7 +63,7 @@ def link_exchanges_without_db(data: list, db: str) -> list:
 
 
 def _relink_exchanges(data: list, other: str) -> list:
-    other = bw.Database(other)
+    other = Database(other)
     if len(other) == 0:
         raise StrategyError("Cannot link to empty database")
     act = other.random()
@@ -79,7 +81,7 @@ def relink_exchanges_bw2package(data: dict, relink: dict) -> dict:
                 new_key = (relink[input_key[0]], input_key[1])
                 try:
                     # try and find the new key
-                    _ = bw.get_activity(new_key)
+                    _ = get_activity(new_key)
                     exc["input"] = new_key
                 except ActivityDataset.DoesNotExist as e:
                     raise ValueError(
@@ -144,7 +146,7 @@ def relink_exchanges(exchanges: list, candidates: dict, duplicates: dict) -> tup
 
 
 def relink_exchanges_existing_db(
-    db: bw.Database, old: str, other: bw.Database
+    db: Database, old: str, other: Database
 ) -> tuple:
     """Relink exchanges after the database has been created/written.
 
@@ -189,11 +191,11 @@ def relink_exchanges_existing_db(
     return (remainder, altered, unlinked_exchanges)
 
 
-def relink_activity_exchanges(act, old: str, other: bw.Database) -> tuple:
+def relink_activity_exchanges(act, old: str, other: Database) -> tuple:
     if old == other.name:
         log.info("No point relinking to same database.")
         return
-    db = bw.Database(act.key[0])
+    db = Database(act.key[0])
     assert db.backend == "sqlite", "Relinking only allowed for SQLITE backends"
     assert other.backend == "sqlite", "Relinking only allowed for SQLITE backends"
 

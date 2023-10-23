@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 import abc
 
+# BW25: ignore
 import numpy as np
 from bw2data.parameters import ParameterBase
 from bw2data.proxies import ExchangeProxyBase
