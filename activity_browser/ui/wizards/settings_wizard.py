@@ -221,7 +221,6 @@ class SettingsPage(QtWidgets.QWizardPage):
                 self.bwdir_name.setText(path)
                 self.registerField("current_bw_dir", self.bwdir_name)
                 self.combobox_add_dir(self.bwdir, path)
-                bw2data.projects.change_base_directories(new_dir)
                 ab_settings.startup_project = ""
                 self.bwdir.blockSignals(True)
                 self.bwdir.setCurrentText(self.bwdir_name.text())
@@ -244,7 +243,6 @@ class SettingsPage(QtWidgets.QWizardPage):
             if reply == QtWidgets.QMessageBox.Yes:
                 self.bwdir_name.setText(path)
                 self.registerField("current_bw_dir", self.bwdir_name)
-                bw2data.projects.change_base_directories(new_dir)
                 self.update_project_combo(path=self.bwdir_name.text())
             else:
                 prev_env_index = self.bwdir.findText(

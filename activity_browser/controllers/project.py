@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
+from pathlib import Path
 
-import brightway2 as bw
+import bw2data
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, Slot
 
@@ -34,17 +35,31 @@ class ProjectController(QObject):
 
     @Slot(str, name="switchBwDirPath")
     def switch_brightway2_dir_path(self, dirpath: str) -> None:
-        if bc.switch_brightway2_dir(dirpath):
+        """Perform the actual work of changing the brightway data directory.
+
+        Parameters
+        ----------
+        dirpath : str
+            The new path of the brightway data directory.
+        """
+        try:
+            dir_path = Path(dirpath).resolve()
+            bw2data.projects.change_base_directories(dir_path)
             self.change_project(ab_settings.startup_project, reload=True)
             signals.databases_changed.emit()
+        except ValueError as err:
+            logger.error("Failed to change directory: %s", str(err))
+            error = QtWidgets.QErrorMessage()
+            error.showMessage(f"Failed to change brightway directory: {err}")
+            error.exec_()
 
     def load_settings(self) -> None:
         if ab_settings.settings:
             log.info("Loading user settings:")
             self.switch_brightway2_dir_path(dirpath=ab_settings.current_bw_dir)
             self.change_project(ab_settings.startup_project)
-        log.info("Brightway2 data directory: {}".format(bw.projects._base_data_dir))
-        log.info("Brightway2 active project: {}".format(bw.projects.current))
+        log.info("Brightway2 data directory: {}".format(bw2data.projects._base_data_dir))
+        log.info("Brightway2 active project: {}".format(bw2data.projects.current))
 
     @staticmethod
     @Slot(str, name="changeProject")
@@ -53,13 +68,13 @@ class ProjectController(QObject):
         the current project.
         """
         #        assert name, "No project name given."
-        name = "default" if not name else name
-        if name not in bw.projects:
+        name = name or "default"
+        if name not in bw2data.projects:
             log.info("Project does not exist: {}, creating!".format(name))
-            bw.projects.create_project(name)
+            bw2data.projects.create_project(name)
 
-        if name != bw.projects.current or reload:
-            bw.projects.set_current(name)
+        if name != bw2data.projects.current or reload:
+            bw2data.projects.set_current(name)
         signals.project_selected.emit()
         log.info("Loaded project:", name)
 
@@ -72,11 +87,11 @@ class ProjectController(QObject):
             if not ok or not name:
                 return
 
-        if name and name not in bw.projects:
-            bw.projects.set_current(name)
+        if name and name not in bw2data.projects:
+            bw2data.projects.set_current(name)
             self.change_project(name, reload=True)
             signals.projects_changed.emit()
-        elif name in bw.projects:
+        elif name in bw2data.projects:
             QtWidgets.QMessageBox.information(
                 self.window, "Not possible.", "A project with this name already exists."
             )
@@ -86,12 +101,12 @@ class ProjectController(QObject):
         name, ok = QtWidgets.QInputDialog.getText(
             self.window,
             "Copy current project",
-            "Copy current project ({}) to new name:".format(bw.projects.current)
+            "Copy current project ({}) to new name:".format(bw2data.projects.current)
             + " " * 10,
         )
         if ok and name:
-            if name not in bw.projects:
-                bw.projects.copy_project(name, switch=True)
+            if name not in bw2data.projects:
+                bw2data.projects.copy_project(name, switch=True)
                 self.change_project(name)
                 signals.projects_changed.emit()
             else:
@@ -103,23 +118,23 @@ class ProjectController(QObject):
 
     @Slot(name="deleteProject")
     def delete_project(self):
-        if len(bw.projects) == 1:
+        if len(bw2data.projects) == 1:
             QtWidgets.QMessageBox.information(
                 self.window, "Not possible", "Can't delete last project."
             )
             return
 
         delete_dialog = ProjectDeletionDialog.construct_project_deletion_dialog(
-            self.window, bw.projects.current
+            self.window, bw2data.projects.current
         )
 
         if delete_dialog.exec_() == ProjectDeletionDialog.Accepted:
             if delete_dialog.deletion_warning_checked():
-                bw.projects.delete_project(bw.projects.current, delete_dir=True)
+                bw2data.projects.delete_project(bw2data.projects.current, delete_dir=True)
                 self.change_project(ab_settings.startup_project, reload=True)
                 signals.projects_changed.emit()
             else:
-                bw.projects.delete_project(bw.projects.current, delete_dir=False)
+                bw2data.projects.delete_project(bw2data.projects.current, delete_dir=False)
                 self.change_project(ab_settings.startup_project, reload=True)
                 signals.projects_changed.emit()
 
@@ -148,7 +163,7 @@ class CSetupController(QObject):
         if ok and name:
             if not self._can_use_cs_name(name):
                 return
-            bw.calculation_setups[name] = {"inv": [], "ia": []}
+            bw2data.calculation_setups[name] = {"inv": [], "ia": []}
             signals.calculation_setup_selected.emit(name)
             log.info("New calculation setup: {}".format(name))
 
@@ -162,13 +177,13 @@ class CSetupController(QObject):
         if ok and new_name:
             if not self._can_use_cs_name(new_name):
                 return
-            bw.calculation_setups[new_name] = bw.calculation_setups[current].copy()
+            bw2data.calculation_setups[new_name] = bw2data.calculation_setups[current].copy()
             signals.calculation_setup_selected.emit(new_name)
             log.info("Copied calculation setup {} as {}".format(current, new_name))
 
     @Slot(str, name="deleteCalculationSetup")
     def delete_calculation_setup(self, name: str) -> None:
-        del bw.calculation_setups[name]
+        del bw2data.calculation_setups[name]
         signals.set_default_calculation_setup.emit()
         log.info("Deleted calculation setup: {}".format(name))
 
@@ -182,15 +197,15 @@ class CSetupController(QObject):
         if ok and new_name:
             if not self._can_use_cs_name(new_name):
                 return
-            bw.calculation_setups[new_name] = bw.calculation_setups[current].copy()
-            del bw.calculation_setups[current]
+            bw2data.calculation_setups[new_name] = bw2data.calculation_setups[current].copy()
+            del bw2data.calculation_setups[current]
             signals.calculation_setup_selected.emit(new_name)
             log.info(
                 "Renamed calculation setup from {} to {}".format(current, new_name)
             )
 
     def _can_use_cs_name(self, new_name: str) -> bool:
-        if new_name in bw.calculation_setups.keys():
+        if new_name in bw2data.calculation_setups.keys():
             QtWidgets.QMessageBox.warning(
                 self.window,
                 "Not possible",
@@ -219,10 +234,10 @@ class ImpactCategoryController(QObject):
         the appropriate methods"""
         if level is not None and level != "leaf":
             methods = [
-                bw.Method(mthd) for mthd in bw.methods if set(method).issubset(mthd)
+                bw2data.Method(mthd) for mthd in bw2data.methods if set(method).issubset(mthd)
             ]
         else:
-            methods = [bw.Method(method)]
+            methods = [bw2data.Method(method)]
         dialog = TupleNameDialog.get_combined_name(
             self.window, "Impact category name", "Combined name:", method, "Copy"
         )
@@ -230,7 +245,7 @@ class ImpactCategoryController(QObject):
             new_name = dialog.result_tuple
             for mthd in methods:
                 new_method = new_name + mthd.name[len(new_name) - 1 :]
-                if new_method in bw.methods:
+                if new_method in bw2data.methods:
                     warn = "Impact Category with name '{}' already exists!".format(
                         new_method
                     )
@@ -247,11 +262,11 @@ class ImpactCategoryController(QObject):
         """Call delete on the (first) selected method and present confirmation dialog."""
         if level is not None and level != "leaf":
             methods = [
-                bw.Method(mthd) for mthd in bw.methods if set(method_).issubset(mthd)
+                bw2data.Method(mthd) for mthd in bw2data.methods if set(method_).issubset(mthd)
             ]
         else:
-            methods = [bw.Method(method_)]
-        method = bw.Method(method_)
+            methods = [bw2data.Method(method_)]
+        method = bw2data.Method(method_)
         dialog = QtWidgets.QMessageBox()
         dialog.setWindowTitle("Are you sure you want to delete this method?")
         dialog.setText(
@@ -281,7 +296,7 @@ class ImpactCategoryController(QObject):
             data[1] = data[1].get("amount")
             return tuple(data)
 
-        method = bw.Method(method)
+        method = bw2data.Method(method)
         modified_cfs = (unset(cf) for cf in removed if isinstance(cf[1], dict))
         cfs = method.load()
         for cf in modified_cfs:
@@ -298,7 +313,7 @@ class ImpactCategoryController(QObject):
         NOTE: if the flow key matches one of the CFs in method, that CF
         will be edited, if not, a new CF will be added to the method.
         """
-        method = bw.Method(method)
+        method = bw2data.Method(method)
         cfs = method.load()
         idx = next((i for i, c in enumerate(cfs) if c[0] == cf[0]), None)
         if idx is None:
@@ -310,7 +325,7 @@ class ImpactCategoryController(QObject):
 
     @Slot(tuple, tuple, name="addMethodToCF")
     def add_method_to_cf(self, cf: tuple, method: tuple):
-        method = bw.Method(method)
+        method = bw2data.Method(method)
         cfs = method.load()
         # fill in default values for a new cf row
         cfdata = (
@@ -332,7 +347,7 @@ class ImpactCategoryController(QObject):
 
     @Slot(tuple, tuple, name="deleteMethodFromCF")
     def delete_method_from_cf(self, to_delete: tuple, method: tuple):
-        method = bw.Method(method)
+        method = bw2data.Method(method)
         cfs = method.load()
         delete_list = []
         for i in cfs:
