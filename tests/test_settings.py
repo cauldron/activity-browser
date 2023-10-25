@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-import brightway2 as bw
+import bw2data
 import pytest
 
 from activity_browser.settings import ABSettings, BaseSettings, ProjectSettings
@@ -43,18 +43,18 @@ def test_ab_default_keys(ab_settings):
 
 
 def test_ab_default_settings(ab_settings):
-    assert ABSettings.get_default_directory() == ab_settings.custom_bw_dir[0]
+    assert str(bw2data.projects._base_data_dir) == ab_settings.custom_bw_dir[0]
     assert ABSettings.get_default_project_name() == ab_settings.startup_project
 
 
 def test_ab_edit_settings(ab_settings):
     current_path = os.path.dirname(os.path.abspath(__file__))
     ab_settings.custom_bw_dir = current_path
-    assert ab_settings.custom_bw_dir != ABSettings.get_default_directory()
+    assert ab_settings.custom_bw_dir != str(bw2data.projects._base_data_dir)
 
 
 @pytest.mark.skipif(
-    "pytest_project" not in bw.projects, reason="test project not created"
+    "pytest_project" not in bw2data.projects, reason="test project not created"
 )
 def test_ab_existing_startup(ab_settings):
     """Alter the startup project and assert that it is correctly changed.

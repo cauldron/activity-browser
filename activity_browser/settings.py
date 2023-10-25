@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
-import os
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import Generator, Optional
 
 import platformdirs
-import brightway2 as bw
+import bw2data
 from PySide2.QtWidgets import QMessageBox
 
-from .logger import ABHandler
-from .signals import signals
+from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
@@ -21,9 +20,9 @@ class BaseSettings(object):
     """Base Class for handling JSON settings files."""
 
     def __init__(self, directory: str, filename: str = None):
-        self.data_dir = directory
-        self.filename = filename or "default_settings.json"
-        self.settings_file = os.path.join(self.data_dir, self.filename)
+        self.data_dir: str = directory
+        self.filename: str = filename or "default_settings.json"
+        self.settings_file: Path = Path(self.data_dir).joinpath(self.filename)
         self.settings: Optional[dict] = None
         self.initialize_settings()
 
@@ -41,18 +40,18 @@ class BaseSettings(object):
         """Attempt to find and read the settings_file, creates a default
         if not found
         """
-        if os.path.isfile(self.settings_file):
+        if self.settings_file.is_file():
             self.load_settings()
         else:
             self.settings = self.get_default_settings()
             self.write_settings()
 
     def load_settings(self) -> None:
-        with open(self.settings_file, "r") as infile:
+        with self.settings_file.open() as infile:
             self.settings = json.load(infile)
 
     def write_settings(self) -> None:
-        with open(self.settings_file, "w") as outfile:
+        with self.settings_file.open("w") as outfile:
             json.dump(self.settings, outfile, indent=4, sort_keys=True)
 
 
@@ -63,10 +62,8 @@ class ABSettings(BaseSettings):
     """
 
     def __init__(self, filename: str):
-        ab_dir = platformdirs.user_data_dir("ActivityBrowser", "ActivityBrowser")
-        if not os.path.isdir(ab_dir):
-            os.makedirs(ab_dir, exist_ok=True)
-        self.update_old_settings(ab_dir, filename)
+        ab_dir = platformdirs.user_data_path("ActivityBrowser", "ActivityBrowser", ensure_exists=True)
+        self._update_old_settings(ab_dir, filename)
 
         # Currently loaded plugins objects as:
         # {plugin_name: <plugin_object>, ...}
@@ -77,18 +74,27 @@ class ABSettings(BaseSettings):
         super().__init__(ab_dir, filename)
 
     @staticmethod
-    def update_old_settings(directory: str, filename: str) -> None:
-        """Recycling code to enable backward compatibility: This function is only required for compatibility
-        with the old settings file and can be removed in a future release
+    def _update_old_settings(directory: Path, filename: str) -> None:
+        """Update old settings, backwards compatibility method.
+
+        This function is only required for compatibility with the old settings file
+        and can be removed in a future release.
+
+        Parameters
+        ----------
+        directory : Path
+            Path to the directory containing the settings.
+        filename : str
+            Name of the settings file.
         """
-        file = os.path.join(directory, filename)
-        if not os.path.exists(file):
+        new_file = directory.joinpath(filename)
+        if not new_file.exists():
             package_dir = Path(__file__).resolve().parents[1]
-            old_settings = os.path.join(package_dir, "ABsettings.json")
-            if os.path.exists(old_settings):
-                shutil.copyfile(old_settings, file)
-        if os.path.isfile(file):
-            with open(file, "r") as current:
+            old_settings = package_dir.joinpath("ABsettings.json")
+            if old_settings.exists():
+                shutil.copyfile(old_settings, new_file)
+        if new_file.is_file():
+            with new_file.open() as current:
                 current_settings = json.load(current)
             if "current_bw_dir" not in current_settings:
                 new_settings_content = {
@@ -96,27 +102,27 @@ class ABSettings(BaseSettings):
                     "custom_bw_dirs": [current_settings["custom_bw_dir"]],
                     "startup_project": current_settings["startup_project"],
                 }
-                with open(file, "w") as new_file:
+                with new_file.open("w") as new_file:
                     json.dump(new_settings_content, new_file)
 
     @classmethod
     def get_default_settings(cls) -> dict:
-        """Using methods from the commontasks file to set default settings"""
+        """Using methods from the commontasks file to set default settings."""
         return {
-            "current_bw_dir": cls.get_default_directory(),
-            "custom_bw_dirs": [cls.get_default_directory()],
+            "current_bw_dir": str(bw2data.projects._base_data_dir),
+            "custom_bw_dirs": [str(bw2data.projects._base_data_dir)],
             "startup_project": cls.get_default_project_name(),
         }
 
     @property
     def custom_bw_dir(self) -> str:
-        """Returns the custom brightway directory, or the default"""
-        return self.settings.get("custom_bw_dirs", self.get_default_directory())
+        """Returns the custom brightway directory, or the default."""
+        return self.settings.get("custom_bw_dirs") or str(bw2data.projects._base_data_dir)
 
     @property
     def current_bw_dir(self) -> str:
-        """Returns the current brightway directory"""
-        return self.settings.get("current_bw_dir", self.get_default_directory())
+        """Returns the current brightway directory."""
+        return self.settings.get("current_bw_dir") or str(bw2data.projects._base_data_dir)
 
     @current_bw_dir.setter
     def current_bw_dir(self, directory: str) -> None:
@@ -145,7 +151,7 @@ class ABSettings(BaseSettings):
     def startup_project(self) -> str:
         """Get the startup project from the settings, or the default"""
         project = self.settings.get("startup_project", self.get_default_project_name())
-        if project and project not in bw.projects:
+        if project and project not in bw2data.projects:
             project = self.get_default_project_name()
         return project
 
@@ -155,20 +161,12 @@ class ABSettings(BaseSettings):
         self.settings.update({"startup_project": project})
 
     @staticmethod
-    def get_default_directory() -> str:
-        """Returns the default brightway application directory"""
-        try:
-            return os.environ["BRIGHTWAY2_DIR"]
-        except KeyError:
-            return bw.projects._get_base_directories()[0]
-
-    @staticmethod
     def get_default_project_name() -> Optional[str]:
         """Returns the default project name."""
-        if "default" in bw.projects:
+        if "default" in bw2data.projects:
             return "default"
-        elif len(bw.projects):
-            return next(iter(bw.projects)).name
+        elif len(bw2data.projects):
+            return next(iter(bw2data.projects)).name
         else:
             return None
 
@@ -196,7 +194,7 @@ class ProjectSettings(BaseSettings):
         # it can be a custom location, based on ABsettings. So check that, and if not, use default?
         # once found, load the settings or just an empty dict.
         self.connect_signals()
-        super().__init__(bw.projects.dir, filename)
+        super().__init__(bw2data.projects.dir, filename)
 
         # https://github.com/LCA-ActivityBrowser/activity-browser/issues/235
         # Fix empty settings file and populate with currently active databases
@@ -225,19 +223,18 @@ class ProjectSettings(BaseSettings):
 
         NOTE: This ignores the existing database read-only settings.
         """
-        return {"read-only-databases": {name: True for name in bw.databases.list}}
+        return {"read-only-databases": {name: True for name in bw2data.databases.list}}
 
     def reset_for_project_selection(self) -> None:
         """On switching project, attempt to read the settings for the new
         project.
         """
-        log.info("Reset project settings directory to:", bw.projects.dir)
-        self.settings_file = os.path.join(bw.projects.dir, self.filename)
+        log.info("Reset project settings directory to:", bw2data.projects.dir)
+        self.settings_file = bw2data.projects.dir.joinpath(self.filename)
         self.initialize_settings()
         # create a plugins_list entry for old projects
-        if "plugins_list" not in self.settings:
-            self.settings.update({"plugins_list": []})
-            self.write_settings()
+        self.settings.setdefault("plugins_list", [])
+        self.write_settings()
 
     def add_db(self, db_name: str, read_only: bool = True) -> None:
         """Store new databases and relevant settings here when created/imported"""
@@ -258,7 +255,7 @@ class ProjectSettings(BaseSettings):
         """Check if given database is read-only, defaults to yes."""
         return self.settings["read-only-databases"].get(db_name, True)
 
-    def get_editable_databases(self):
+    def get_editable_databases(self) -> Generator[str, None, None]:
         """Return list of database names where read-only is false
 
         NOTE: discards the biosphere3 database based on name.
@@ -266,7 +263,7 @@ class ProjectSettings(BaseSettings):
         iterator = self.settings.get("read-only-databases", {}).items()
         return (name for name, ro in iterator if not ro and name != "biosphere3")
 
-    def add_plugin(self, name: str, select: bool = True):
+    def add_plugin(self, name: str, select: bool = True) -> None:
         """Add a plugin to settings or remove it"""
         if select:
             self.settings["plugins_list"].append(name)
