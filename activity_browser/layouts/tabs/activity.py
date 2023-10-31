@@ -17,7 +17,7 @@ from ...ui.tables import (
     TechnosphereExchangeTable,
 )
 from ...ui.widgets import ActivityDataGrid, DetailsGroupBox, SignalledPlainTextEdit
-from ..panels import ABTab
+from activity_browser.layouts.base import ABTab
 
 
 class ActivitiesTab(ABTab):

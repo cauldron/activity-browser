@@ -2,15 +2,15 @@ import sys
 
 from PySide2 import QtCore, QtWidgets
 
-from ...signals import signals
-from ...ui.style import header
-from ...ui.utils import StdRedirector
-from ..panels import ABTab
+from activity_browser.layouts.base import ABTab
+from activity_browser.signals import signals
+from activity_browser.ui.style import header
+from activity_browser.ui.utils import StdRedirector
 
 
 class DebugTab(ABTab):
     def __init__(self, parent=None):
-        super(DebugTab, self).__init__(parent)
+        super().__init__(parent)
 
         self.log = QtWidgets.QPlainTextEdit(self)
         sys.stdout = StdRedirector(self.log, sys.stdout)

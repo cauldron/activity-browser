@@ -4,8 +4,7 @@ import logging
 from PySide2 import QtCore, QtWidgets
 
 from activity_browser.logger import ABHandler
-
-from ...signals import signals
+from activity_browser.signals import signals
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
@@ -13,7 +12,7 @@ log = ABHandler.setup_with_logger(logger, __name__)
 
 class ABTab(QtWidgets.QTabWidget):
     def __init__(self, parent=None):
-        super(ABTab, self).__init__(parent)
+        super().__init__(parent)
         self.setMovable(True)
         self.tabs = dict()  # keys: tab name; values: tab widget
 

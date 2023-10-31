@@ -10,7 +10,7 @@ from activity_browser.logger import ABHandler
 
 from ...bwutils.errors import ABError
 from ...signals import signals
-from ..panels import ABTab
+from activity_browser.layouts.base import ABTab
 from .LCA_results_tabs import LCAResultsSubTab
 
 logger = logging.getLogger("ab_logs")

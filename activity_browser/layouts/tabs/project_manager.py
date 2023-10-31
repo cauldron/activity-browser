@@ -5,7 +5,7 @@ from ...signals import signals
 from ...ui.icons import qicons
 from ...ui.style import header
 from ...ui.tables import ActivitiesBiosphereTable, DatabasesTable, ProjectListWidget
-from ..panels import ABTab
+from activity_browser.layouts.base import ABTab
 
 
 class ProjectTab(QtWidgets.QWidget):

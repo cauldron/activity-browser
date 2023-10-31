@@ -6,7 +6,7 @@ from ...signals import signals
 from ...ui.icons import qicons
 from ...ui.style import header, horizontal_line
 from ...ui.tables import MethodCharacterizationFactorsTable, MethodsTable, MethodsTree
-from ..panels import ABTab
+from activity_browser.layouts.base import ABTab
 
 
 class MethodCharacterizationFactorsTab(QtWidgets.QWidget):

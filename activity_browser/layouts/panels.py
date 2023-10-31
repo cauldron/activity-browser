@@ -2,26 +2,62 @@
 import logging
 from pathlib import Path
 
-import brightway2 as bw
 from bw2data import get_node
 from PySide2.QtWidgets import QVBoxLayout
 
-from activity_browser.logger import ABHandler
-
-from ...bwutils.commontasks import get_activity_name
-from ...signals import signals
-from ...ui.web import GraphNavigatorWidget, RestrictedWebViewWidget
-from ..tabs import (
+from activity_browser.bwutils.commontasks import get_activity_name
+from activity_browser.layouts.base import ABTab
+from activity_browser.layouts.tabs import (
     ActivitiesTab,
     CharacterizationFactorsTab,
+    DebugTab,
+    HistoryTab,
     LCAResultsTab,
     LCASetupTab,
+    MethodsTab,
     ParametersTab,
+    ProjectTab,
 )
-from .panel import ABTab
+from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
+from activity_browser.ui.web import GraphNavigatorWidget, RestrictedWebViewWidget
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
+
+
+class BottomPanel(ABTab):
+    side = "bottom"
+
+    def __init__(self, *args):
+        super(BottomPanel, self).__init__(*args)
+
+        self.tabs = {"Debug": DebugTab(self)}
+        for tab_name, tab in self.tabs.items():
+            self.addTab(tab, tab_name)
+
+        self.setVisible(False)
+
+    def show_debug_window(self, toggle: bool = False):
+        self.setVisible(toggle)
+        self.tabs["Debug"].setVisible(toggle)
+
+    
+class LeftPanel(ABTab):
+    side = "left"
+
+    def __init__(self, *args):
+        super(LeftPanel, self).__init__(*args)
+
+        self.tabs = {
+            "Project": ProjectTab(self),
+            "Impact Categories": MethodsTab(self),
+            "History": HistoryTab(self),
+        }
+        for tab_name, tab in self.tabs.items():
+            self.addTab(tab, tab_name)
+        # tabs hidden at start
+        self.hide_tab("History")
 
 
 class RightPanel(ABTab):
