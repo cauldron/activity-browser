@@ -2,9 +2,9 @@ import pandas
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Qt, Slot
 
-from ...signals import signals
-from ...ui.style import header
-from ...ui.tables import PluginsTable
+from activity_browser.signals import signals
+from activity_browser.ui.style import header
+from activity_browser.ui.tables import PluginsTable
 
 
 class PluginsManagerWizard(QtWidgets.QWizard):

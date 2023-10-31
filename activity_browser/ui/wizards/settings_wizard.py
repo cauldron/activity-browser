@@ -7,9 +7,8 @@ import brightway2 as bw
 from PySide2 import QtCore, QtWidgets
 
 from activity_browser.logger import ABHandler
-
-from ...settings import ab_settings
-from ...signals import signals
+from activity_browser.settings import ab_settings
+from activity_browser.signals import signals
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger)

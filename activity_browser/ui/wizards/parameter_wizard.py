@@ -3,7 +3,7 @@ import brightway2 as bw
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Signal
 
-from ...bwutils import commontasks as bc
+from activity_browser.bwutils import commontasks as bc
 
 PARAMETER_STRINGS = (
     "Project: Available to all other parameters",

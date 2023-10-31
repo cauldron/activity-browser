@@ -3,8 +3,9 @@ import brightway2 as bw
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QSize, QUrl, Slot
 
-from ..info import __version__ as ab_version
-from ..signals import signals
+from activity_browser.info import __version__ as ab_version
+from activity_browser.signals import signals
+
 from .icons import qicons
 
 

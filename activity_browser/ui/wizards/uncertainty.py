@@ -7,13 +7,12 @@ from PySide2.QtCore import Signal, Slot
 from stats_arrays import uncertainty_choices as uncertainty
 from stats_arrays.distributions import *
 
+from activity_browser.bwutils import PedigreeMatrix, get_uncertainty_interface
+from activity_browser.bwutils.uncertainty import EMPTY_UNCERTAINTY
 from activity_browser.logger import ABHandler
-
-from ...bwutils import PedigreeMatrix, get_uncertainty_interface
-from ...bwutils.uncertainty import EMPTY_UNCERTAINTY
-from ...signals import signals
-from ..figures import SimpleDistributionPlot
-from ..style import style_group_box
+from activity_browser.signals import signals
+from activity_browser.ui.figures import SimpleDistributionPlot
+from activity_browser.ui.style import style_group_box
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger)

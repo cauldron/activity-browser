@@ -17,13 +17,11 @@ from bw2io.extractors import Ecospold2DataExtractor
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Signal, Slot
 
+from activity_browser.bwutils.errors import ImportCanceledError, LinkingFailed
+from activity_browser.bwutils.importers import ABExcelImporter, ABPackage
 from activity_browser.logger import ABHandler
-
-from ...bwutils.errors import ImportCanceledError, LinkingFailed
-from ...bwutils.importers import ABExcelImporter, ABPackage
-from ...signals import signals
-from ..style import style_group_box
-from ..widgets import DatabaseLinkingDialog
+from activity_browser.ui.style import style_group_box
+from activity_browser.ui.widgets import DatabaseLinkingDialog
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger)

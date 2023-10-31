@@ -11,10 +11,9 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide2 import QtWidgets
 
+from activity_browser.bwutils.commontasks import wrap_text
 from activity_browser.logger import ABHandler
 from activity_browser.utils import savefilepath
-
-from ..bwutils.commontasks import wrap_text
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
