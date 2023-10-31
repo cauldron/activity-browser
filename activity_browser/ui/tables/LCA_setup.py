@@ -7,8 +7,8 @@ from PySide2.QtCore import Qt, Slot
 
 from activity_browser.logger import ABHandler
 from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
 
-from ..icons import qicons
 from .delegates import FloatDelegate
 from .impact_categories import MethodsTable, MethodsTree
 from .models import CSActivityModel, CSMethodsModel, ScenarioImportModel

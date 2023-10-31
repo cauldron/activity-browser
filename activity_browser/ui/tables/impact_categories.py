@@ -4,8 +4,9 @@ from typing import Iterable
 from PySide2 import QtWidgets
 from PySide2.QtCore import QModelIndex, Slot
 
-from ...signals import signals
-from ..icons import qicons
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+
 from .delegates import FloatDelegate, UncertaintyDelegate
 from .inventory import ActivitiesBiosphereTable
 from .models import (
@@ -13,7 +14,7 @@ from .models import (
     MethodsListModel,
     MethodsTreeModel,
 )
-from .views import ABDataFrameView, ABDictTreeView, ABFilterableDataFrameView
+from .views import ABDictTreeView, ABFilterableDataFrameView
 
 
 class MethodsTable(ABFilterableDataFrameView):

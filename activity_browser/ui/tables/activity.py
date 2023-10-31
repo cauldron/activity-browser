@@ -2,8 +2,9 @@
 from PySide2 import QtWidgets
 from PySide2.QtCore import Slot
 
-from ...signals import signals
-from ..icons import qicons
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+
 from .delegates import *
 from .models import (
     BaseExchangeModel,

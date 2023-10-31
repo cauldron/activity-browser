@@ -4,9 +4,10 @@ from PySide2.QtCore import Slot
 from PySide2.QtGui import QContextMenuEvent, QDragMoveEvent, QDropEvent
 from PySide2.QtWidgets import QAction, QMenu, QMessageBox
 
-from ...settings import project_settings
-from ...signals import signals
-from ..icons import qicons
+from activity_browser.settings import project_settings
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+
 from .delegates import *
 from .models import (
     ActivityParameterModel,

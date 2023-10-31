@@ -2,9 +2,10 @@
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
 
-from ...settings import project_settings
-from ...signals import signals
-from ..icons import qicons
+from activity_browser.settings import project_settings
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+
 from .delegates import CheckboxDelegate
 from .models import ActivitiesBiosphereModel, DatabasesModel
 from .views import ABDataFrameView, ABFilterableDataFrameView

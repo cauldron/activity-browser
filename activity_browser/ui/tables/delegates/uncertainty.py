@@ -2,7 +2,7 @@
 from PySide2 import QtCore, QtWidgets
 from stats_arrays import uncertainty_choices as uc
 
-from ....signals import signals
+from activity_browser.signals import signals
 
 
 class UncertaintyDelegate(QtWidgets.QStyledItemDelegate):

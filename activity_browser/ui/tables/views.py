@@ -33,10 +33,10 @@ from PySide2.QtWidgets import (
 )
 
 from activity_browser.logger import ABHandler
+from activity_browser.settings import ab_settings
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.widgets.dialog import FilterManagerDialog, SimpleFilterDialog
 
-from ...settings import ab_settings
-from ..icons import qicons
-from ..widgets.dialog import FilterManagerDialog, SimpleFilterDialog
 from .delegates import ViewOnlyDelegate
 from .models import PandasModel
 

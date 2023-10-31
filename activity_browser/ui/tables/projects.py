@@ -3,7 +3,7 @@ from bw2data import projects
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QComboBox
 
-from ...signals import signals
+from activity_browser.signals import signals
 
 
 class ProjectListWidget(QComboBox):

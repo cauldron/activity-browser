@@ -3,7 +3,6 @@ import pandas
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtWidgets import QMessageBox
 
-from ...signals import signals
 from .delegates import CheckboxDelegate
 from .models.plugins import PluginsModel
 from .views import ABDataFrameView

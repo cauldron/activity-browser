@@ -2,9 +2,9 @@
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QAbstractItemView, QMenu
 
-from ..icons import qicons
-from .models import ActivitiesHistoryModel
-from .views import ABDataFrameView
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.tables.models import ActivitiesHistoryModel
+from activity_browser.ui.tables.views import ABDataFrameView
 
 
 class ActivitiesHistoryTable(ABDataFrameView):
