@@ -2,10 +2,11 @@
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtWidgets import QMessageBox
 
-from ...bwutils import AB_metadata
-from ...settings import project_settings
-from ...signals import signals
-from ..icons import qicons
+from activity_browser.bwutils import AB_metadata
+from activity_browser.settings import project_settings
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+
 from .line_edit import SignalledComboEdit, SignalledLineEdit
 
 

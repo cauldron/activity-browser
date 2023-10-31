@@ -8,8 +8,7 @@ from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Signal, Slot
 
 from activity_browser.logger import ABHandler
-
-from ...signals import signals
+from activity_browser.signals import signals
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)

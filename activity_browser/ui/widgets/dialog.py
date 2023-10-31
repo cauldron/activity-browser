@@ -9,9 +9,8 @@ from PySide2.QtCore import QRegExp, Qt, QThread, Signal, Slot
 from activity_browser.bwutils.superstructure import get_sheet_names
 from activity_browser.settings import project_settings
 from activity_browser.signals import signals
-
-from ...ui.icons import qicons
-from ..style import style_group_box, vertical_line
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.style import style_group_box, vertical_line
 
 
 class ForceInputDialog(QtWidgets.QDialog):

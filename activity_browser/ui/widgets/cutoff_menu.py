@@ -25,7 +25,7 @@ from PySide2.QtWidgets import (
     QWidget,
 )
 
-from ..style import vertical_line
+from activity_browser.ui.style import vertical_line
 
 # These tuples are used in referring to the two Types and three Labels used
 Types = namedtuple("types", ("relative", "topx"))

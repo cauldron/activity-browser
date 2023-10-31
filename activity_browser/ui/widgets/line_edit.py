@@ -3,7 +3,7 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Slot
 from PySide2.QtGui import QTextFormat
 
-from ...signals import signals
+from activity_browser.signals import signals
 
 
 class SignalledLineEdit(QtWidgets.QLineEdit):
