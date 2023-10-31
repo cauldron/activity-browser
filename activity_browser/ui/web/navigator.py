@@ -12,10 +12,10 @@ from bw2data import get_node
 from PySide2 import QtWidgets
 from PySide2.QtCore import Slot
 
+from activity_browser.bwutils.commontasks import identify_activity_type
 from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
 
-from ...bwutils.commontasks import identify_activity_type
-from ...signals import signals
 from .base import BaseGraph, BaseNavigatorWidget
 
 logger = logging.getLogger("ab_logs")

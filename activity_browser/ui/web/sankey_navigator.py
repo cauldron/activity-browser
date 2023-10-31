@@ -10,13 +10,13 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import QComboBox
 
-from activity_browser.logger import ABHandler
-
-from ...bwutils.commontasks import identify_activity_type
-from ...bwutils.superstructure.graph_traversal_with_scenario import (
+from activity_browser.bwutils.commontasks import identify_activity_type
+from activity_browser.bwutils.superstructure.graph_traversal_with_scenario import (
     GraphTraversalWithScenario,
 )
-from ...signals import signals
+from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
+
 from .base import BaseGraph, BaseNavigatorWidget
 
 logger = logging.getLogger("ab_logs")

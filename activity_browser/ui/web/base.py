@@ -10,13 +10,13 @@ from bw_processing import safe_filename
 from PySide2 import QtWebChannel, QtWebEngineWidgets, QtWidgets
 from PySide2.QtCore import QObject, Qt, QUrl, Signal, Slot
 
+from activity_browser import utils
 from activity_browser.logger import ABHandler
+from activity_browser.settings import ab_settings
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
 
-from ... import utils
-from ...settings import ab_settings
-from ...signals import signals
-from ...ui.icons import qicons
-from . import webutils
+from .webutils import get_static_css_path
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
@@ -92,7 +92,7 @@ class BaseNavigatorWidget(QtWidgets.QWidget):
 
     def send_json(self) -> None:
         self.bridge.graph_ready.emit(self.graph.json_data)
-        css_path = webutils.get_static_css_path(self.css_file)
+        css_path = get_static_css_path(self.css_file)
         css_code = utils.read_file_text(css_path)
         style_element = "<style>" + css_code + "</style>"
         self.bridge.style.emit(style_element)
