@@ -20,6 +20,7 @@ from PySide2.QtCore import Signal, Slot
 from activity_browser.bwutils.errors import ImportCanceledError, LinkingFailed
 from activity_browser.bwutils.importers import ABExcelImporter, ABPackage
 from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
 from activity_browser.ui.style import style_group_box
 from activity_browser.ui.widgets import DatabaseLinkingDialog
 
