@@ -13,7 +13,7 @@ from PySide2.QtWidgets import QMessageBox
 
 from activity_browser.logger import ABHandler
 from activity_browser.signals import signals
-from activity_browser.ui.wizards import UncertaintyWizard
+from activity_browser.ui.wizards.uncertainty import UncertaintyWizard
 
 from .base import BaseTreeModel, DragPandasModel, EditablePandasModel, TreeItem
 

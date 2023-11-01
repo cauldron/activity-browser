@@ -20,7 +20,7 @@ from activity_browser.bwutils import commontasks as bc
 from activity_browser.bwutils import uncertainty as uc
 from activity_browser.logger import ABHandler
 from activity_browser.signals import signals
-from activity_browser.ui.wizards import UncertaintyWizard
+from activity_browser.ui.wizards.uncertainty import UncertaintyWizard
 
 from .base import BaseTreeModel, EditablePandasModel, TreeItem
 
