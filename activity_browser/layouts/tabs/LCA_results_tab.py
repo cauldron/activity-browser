@@ -6,11 +6,11 @@ from bw2calc.errors import BW2CalcError
 from PySide2.QtCore import Qt, Slot
 from PySide2.QtWidgets import QApplication, QMessageBox, QVBoxLayout
 
-from activity_browser.logger import ABHandler
-
-from ...bwutils.errors import ABError
-from ...signals import signals
+from activity_browser.bwutils.errors import ABError
 from activity_browser.layouts.base import ABTab
+from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
+
 from .LCA_results_tabs import LCAResultsSubTab
 
 logger = logging.getLogger("ab_logs")

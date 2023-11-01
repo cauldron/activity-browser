@@ -35,9 +35,7 @@ from PySide2.QtWidgets import (
 )
 from stats_arrays.errors import InvalidParamsError
 
-from activity_browser.logger import ABHandler
-
-from ...bwutils import (
+from activity_browser.bwutils import (
     MLCA,
     Contributions,
     GlobalSensitivityAnalysis,
@@ -45,20 +43,26 @@ from ...bwutils import (
     SuperstructureMLCA,
     calculations,
 )
-from ...bwutils import commontasks as bc
-from ...signals import signals
-from ...ui.figures import (
+from activity_browser.bwutils import commontasks as bc
+from activity_browser.logger import ABHandler
+from activity_browser.signals import signals
+from activity_browser.ui.figures import (
     ContributionPlot,
     CorrelationPlot,
     LCAResultsBarChart,
     LCAResultsPlot,
     MonteCarloPlot,
 )
-from ...ui.icons import qicons
-from ...ui.style import header, horizontal_line, vertical_line
-from ...ui.tables import ContributionTable, InventoryTable, LCAResultsTable
-from ...ui.web import SankeyNavigatorWidget
-from ...ui.widgets import CutoffMenu, SwitchComboBox
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.style import header, horizontal_line, vertical_line
+from activity_browser.ui.tables import (
+    ContributionTable,
+    InventoryTable,
+    LCAResultsTable,
+)
+from activity_browser.ui.web import SankeyNavigatorWidget
+from activity_browser.ui.widgets import CutoffMenu, SwitchComboBox
+
 from .base import BaseRightTab
 
 logger = logging.getLogger("ab_logs")

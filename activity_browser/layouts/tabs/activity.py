@@ -5,19 +5,23 @@ from peewee import DoesNotExist
 from PySide2 import QtCore, QtWidgets
 from PySide2.QtCore import Slot
 
-from ...bwutils import commontasks as bc
-from ...settings import project_settings
-from ...signals import signals
-from ...ui.icons import qicons
-from ...ui.style import style_activity_tab
-from ...ui.tables import (
+from activity_browser.bwutils import commontasks as bc
+from activity_browser.layouts.base import ABTab
+from activity_browser.settings import project_settings
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.style import style_activity_tab
+from activity_browser.ui.tables import (
     BiosphereExchangeTable,
     DownstreamExchangeTable,
     ProductExchangeTable,
     TechnosphereExchangeTable,
 )
-from ...ui.widgets import ActivityDataGrid, DetailsGroupBox, SignalledPlainTextEdit
-from activity_browser.layouts.base import ABTab
+from activity_browser.ui.widgets import (
+    ActivityDataGrid,
+    DetailsGroupBox,
+    SignalledPlainTextEdit,
+)
 
 
 class ActivitiesTab(ABTab):

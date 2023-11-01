@@ -6,12 +6,13 @@ import traceback
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
-from ..signals import signals
-from ..ui.icons import qicons
-from ..ui.menu_bar import MenuBar
-from ..ui.statusbar import Statusbar
-from ..ui.style import header
-from ..ui.utils import StdRedirector
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.menu_bar import MenuBar
+from activity_browser.ui.statusbar import Statusbar
+from activity_browser.ui.style import header
+from activity_browser.ui.utils import StdRedirector
+
 from .panels import BottomPanel, LeftPanel, RightPanel
 
 

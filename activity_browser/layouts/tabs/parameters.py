@@ -20,11 +20,11 @@ from PySide2.QtWidgets import (
 )
 from xlsxwriter.exceptions import FileCreateError
 
-from ...bwutils.manager import ParameterManager
-from ...signals import signals
-from ...ui.icons import qicons
-from ...ui.style import header, horizontal_line
-from ...ui.tables import (
+from activity_browser.bwutils.manager import ParameterManager
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.style import header, horizontal_line
+from activity_browser.ui.tables import (
     ActivityParameterTable,
     BaseParameterTable,
     DataBaseParameterTable,
@@ -32,6 +32,7 @@ from ...ui.tables import (
     ProjectParameterTable,
     ScenarioTable,
 )
+
 from .base import BaseRightTab
 
 
@@ -540,7 +541,7 @@ class ParameterScenariosTab(BaseRightTab):
         """Calculate exchange changes for each parameter scenario and construct
         a flow scenarios template file.
         """
-        from ...bwutils.superstructure import superstructure_from_arrays
+        from activity_browser.bwutils.superstructure import superstructure_from_arrays
 
         pm = ParameterManager()
         names, data = zip(*self.tbl.iterate_scenarios())

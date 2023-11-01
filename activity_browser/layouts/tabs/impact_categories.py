@@ -2,11 +2,15 @@
 
 from PySide2 import QtCore, QtWidgets
 
-from ...signals import signals
-from ...ui.icons import qicons
-from ...ui.style import header, horizontal_line
-from ...ui.tables import MethodCharacterizationFactorsTable, MethodsTable, MethodsTree
 from activity_browser.layouts.base import ABTab
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.style import header, horizontal_line
+from activity_browser.ui.tables import (
+    MethodCharacterizationFactorsTable,
+    MethodsTable,
+    MethodsTree,
+)
 
 
 class MethodCharacterizationFactorsTab(QtWidgets.QWidget):

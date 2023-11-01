@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 from PySide2 import QtCore, QtWidgets
 
-from ...signals import signals
-from ...ui.icons import qicons
-from ...ui.style import header
-from ...ui.tables import ActivitiesBiosphereTable, DatabasesTable, ProjectListWidget
 from activity_browser.layouts.base import ABTab
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.style import header
+from activity_browser.ui.tables import (
+    ActivitiesBiosphereTable,
+    DatabasesTable,
+    ProjectListWidget,
+)
 
 
 class ProjectTab(QtWidgets.QWidget):

@@ -9,13 +9,7 @@ from brightway2 import calculation_setups
 from PySide2 import QtWidgets
 from PySide2.QtCore import Qt, Slot
 
-from activity_browser.bwutils.superstructure import (
-    ABPopup,
-    edit_superstructure_for_string,
-)
-from activity_browser.logger import ABHandler
-
-from ...bwutils.errors import (
+from activity_browser.bwutils.errors import (
     CriticalScenarioExtensionError,
     ImportCanceledError,
     ScenarioDatabaseNotFoundError,
@@ -24,23 +18,32 @@ from ...bwutils.errors import (
     ScenarioExchangeNotFoundError,
     UnalignableScenarioColumnsWarning,
 )
-from ...bwutils.superstructure import (
+from activity_browser.bwutils.superstructure import (
     SUPERSTRUCTURE,
     ABCSVImporter,
     ABFeatherImporter,
     ABFileImporter,
+    ABPopup,
     SuperstructureManager,
     _time_it_,
+    edit_superstructure_for_string,
     import_from_excel,
     scenario_names_from_df,
     scenario_replace_databases,
 )
-from ...settings import ab_settings
-from ...signals import signals
-from ...ui.icons import qicons
-from ...ui.style import header, horizontal_line, style_group_box
-from ...ui.tables import CSActivityTable, CSList, CSMethodsTable, ScenarioImportTable
-from ...ui.widgets import ExcelReadDialog, ScenarioDatabaseDialog
+from activity_browser.logger import ABHandler
+from activity_browser.settings import ab_settings
+from activity_browser.signals import signals
+from activity_browser.ui.icons import qicons
+from activity_browser.ui.style import header, horizontal_line, style_group_box
+from activity_browser.ui.tables import (
+    CSActivityTable,
+    CSList,
+    CSMethodsTable,
+    ScenarioImportTable,
+)
+from activity_browser.ui.widgets import ExcelReadDialog, ScenarioDatabaseDialog
+
 from .base import BaseRightTab
 
 logger = logging.getLogger("ab_logs")
