@@ -2,26 +2,25 @@
 import logging
 
 import brightway2 as bw
-from bw2data.backends.peewee import sqlite3_lci_db
+from bw2data.backends.proxies import sqlite3_lci_db
 from bw2data.parameters import Group
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, Qt, Slot
 
+from activity_browser.bwutils import commontasks as bc
+from activity_browser.bwutils.strategies import relink_exchanges_existing_db
 from activity_browser.logger import ABHandler
-
-from ..bwutils import commontasks as bc
-from ..bwutils.strategies import relink_exchanges_existing_db
-from ..settings import project_settings
-from ..signals import signals
-from ..ui.widgets import (
+from activity_browser.settings import project_settings
+from activity_browser.signals import signals
+from activity_browser.ui.widgets import (
     BiosphereUpdater,
     CopyDatabaseDialog,
     DatabaseLinkingDialog,
     DatabaseLinkingResultsDialog,
     DefaultBiosphereDialog,
 )
-from ..ui.wizards.db_export_wizard import DatabaseExportWizard
-from ..ui.wizards.db_import_wizard import DatabaseImportWizard
+from activity_browser.ui.wizards import DatabaseExportWizard, DatabaseImportWizard
+
 from .project import ProjectController
 
 logger = logging.getLogger("ab_logs")

@@ -4,7 +4,7 @@ from typing import Iterator, Optional, Union
 
 import brightway2 as bw
 from bw2data import get_node
-from bw2data.backends.peewee.proxies import Activity, ExchangeProxyBase
+from bw2data.backends.proxies import Activity, ExchangeProxyBase
 from PySide2 import QtWidgets
 from PySide2.QtCore import QObject, Qt, Slot
 
@@ -13,13 +13,13 @@ from activity_browser.bwutils import commontasks as bc
 from activity_browser.bwutils.strategies import relink_activity_exchanges
 from activity_browser.settings import project_settings
 from activity_browser.signals import signals
-from activity_browser.ui.wizards import UncertaintyWizard
-
-from ..ui.widgets import (
+from activity_browser.ui.widgets import (
     ActivityLinkingDialog,
     ActivityLinkingResultsDialog,
     LocationLinkingDialog,
 )
+from activity_browser.ui.wizards import UncertaintyWizard
+
 from .parameter import ParameterController
 
 

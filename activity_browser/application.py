@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from .controllers import controllers
-from .layouts import MainWindow
-from .logger import ABHandler
+from activity_browser.controllers import CONTROLLERS
+from activity_browser.layouts.main import MainWindow
+from activity_browser.logger import ABHandler
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)
@@ -24,7 +24,7 @@ class Application(object):
         # -> Ensure all controller instances have access to the MainWindow
         # object, this propagates the 'AB' icon to all controller-handled
         # dialogs and wizards.
-        for attr, controller in controllers.items():
+        for attr, controller in CONTROLLERS.items():
             setattr(self, attr, controller(self.main_window))
 
     def show(self):

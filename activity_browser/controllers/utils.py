@@ -3,8 +3,7 @@ from PySide2.QtCore import QObject, Slot
 
 from activity_browser.bwutils import AB_metadata
 from activity_browser.signals import signals
-
-from ..ui.wizards.settings_wizard import SettingsWizard
+from activity_browser.ui.wizards import SettingsWizard
 
 
 class UtilitiesController(QObject):

@@ -9,10 +9,9 @@ from shutil import rmtree
 from PySide2.QtCore import QObject, Slot
 
 from activity_browser.logger import ABHandler
-
-from ..settings import ab_settings, project_settings
-from ..signals import signals
-from ..ui.wizards.plugins_manager_wizard import PluginsManagerWizard
+from activity_browser.settings import ab_settings, project_settings
+from activity_browser.signals import signals
+from activity_browser.ui.wizards import PluginsManagerWizard
 
 logger = logging.getLogger("ab_logs")
 log = ABHandler.setup_with_logger(logger, __name__)

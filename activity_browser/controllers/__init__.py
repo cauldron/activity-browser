@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import Dict, Final
+
 from .activity import ActivityController, ExchangeController
 from .database import DatabaseController
 from .parameter import ParameterController
@@ -6,7 +8,7 @@ from .plugin import PluginController
 from .project import CSetupController, ImpactCategoryController, ProjectController
 from .utils import UtilitiesController
 
-controllers = {
+CONTROLLERS: Final[Dict] = {
     "activity_controller": ActivityController,
     "exchange_controller": ExchangeController,
     "database_controller": DatabaseController,
