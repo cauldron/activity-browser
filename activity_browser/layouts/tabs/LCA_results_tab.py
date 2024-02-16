@@ -2,8 +2,8 @@
 import traceback
 
 from bw2calc.errors import BW2CalcError
-from PySide2.QtCore import Qt, Slot
-from PySide2.QtWidgets import QMessageBox, QVBoxLayout, QApplication
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import QMessageBox, QVBoxLayout, QApplication
 
 from .LCA_results_tabs import LCAResultsSubTab
 from ..panels import ABTab

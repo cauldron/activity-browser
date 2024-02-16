@@ -2,7 +2,7 @@
 from pathlib import Path
 
 import brightway2 as bw
-from PySide2.QtWidgets import QVBoxLayout
+from PySide6.QtWidgets import QVBoxLayout
 
 from .panel import ABTab
 from ...ui.web import GraphNavigatorWidget, RestrictedWebViewWidget

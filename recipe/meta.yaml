@@ -34,7 +34,7 @@ requirements:
     - pandas <=2.1.4
     - pint <=0.21
     - pyperclip
-    - pyside2 >=5.15.5
+    - pyside6 ==6.6.1
     - qt-webengine
     - salib >=1.4
     - seaborn

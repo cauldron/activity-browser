@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
-from PySide2 import QtWidgets, QtGui
-from PySide2.QtCore import QSize, QUrl, Slot
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtCore import QSize, QUrl, Slot
 
 from ..info import __version__ as ab_version
 from .icons import qicons
@@ -18,18 +18,18 @@ class MenuBar(QtWidgets.QMenuBar):
         self.tools_menu = QtWidgets.QMenu('&Tools', self.window)
         self.help_menu = QtWidgets.QMenu('&Help', self.window)
 
-        self.update_biosphere_action = QtWidgets.QAction(
+        self.update_biosphere_action = QtGui.QAction(
             window.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload),
             "&Update biosphere...", None
         )
-        self.export_db_action = QtWidgets.QAction(
+        self.export_db_action = QtGui.QAction(
             self.window.style().standardIcon(QtWidgets.QStyle.SP_DriveHDIcon),
             "&Export database...", None
         )
-        self.import_db_action = QtWidgets.QAction(
+        self.import_db_action = QtGui.QAction(
             qicons.import_db, '&Import database...', None
         )
-        self.manage_plugins_action = QtWidgets.QAction(
+        self.manage_plugins_action = QtGui.QAction(
             qicons.plugin, '&Plugins...', None
         )
 

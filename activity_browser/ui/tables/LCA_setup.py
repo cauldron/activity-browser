@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
-from PySide2.QtCore import Slot, Qt
-from PySide2 import QtWidgets
+from PySide6.QtCore import Slot, Qt
+from PySide6 import QtWidgets
 
 from activity_browser.signals import signals
 from ..icons import qicons

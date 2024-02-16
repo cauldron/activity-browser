@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PySide2.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Slot
 
 from activity_browser.bwutils import AB_metadata
 from activity_browser.signals import signals

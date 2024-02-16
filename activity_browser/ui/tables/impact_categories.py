@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import Iterable
 
-from PySide2 import QtWidgets
-from PySide2.QtCore import QModelIndex, Slot
+from PySide6 import QtWidgets
+from PySide6.QtCore import QModelIndex, Slot
 
 from ...signals import signals
 from ..icons import qicons

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtCore import Signal
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Signal
 
 from ...bwutils import commontasks as bc
 

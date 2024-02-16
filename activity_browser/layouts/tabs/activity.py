@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
 from peewee import DoesNotExist
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Slot
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Slot
 
 from ...ui.icons import qicons
 from ...ui.style import style_activity_tab

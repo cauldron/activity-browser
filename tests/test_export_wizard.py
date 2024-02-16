@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 from activity_browser.signals import signals
 from activity_browser.controllers.database import DatabaseController

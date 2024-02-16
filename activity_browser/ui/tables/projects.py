@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from bw2data import projects
-from PySide2.QtWidgets import QComboBox
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QComboBox
+from PySide6.QtCore import Qt
 from ...signals import signals
 
 

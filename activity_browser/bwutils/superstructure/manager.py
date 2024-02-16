@@ -4,8 +4,8 @@ from typing import List
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-from PySide2.QtWidgets import QApplication, QPushButton
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QPushButton
+from PySide6.QtCore import Qt
 from typing import Union, Optional
 
 import brightway2 as bw

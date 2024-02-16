@@ -7,8 +7,8 @@ from typing import Iterator, Optional
 import brightway2 as bw
 import numpy as np
 import pandas as pd
-from PySide2.QtCore import QModelIndex, Qt, Slot
-from PySide2.QtWidgets import QMessageBox
+from PySide6.QtCore import QModelIndex, Qt, Slot
+from PySide6.QtWidgets import QMessageBox
 
 from activity_browser.signals import signals
 from ...wizards import UncertaintyWizard

@@ -5,8 +5,8 @@ import json
 import os
 from typing import Type
 
-from PySide2 import QtWebEngineWidgets, QtWebChannel, QtWidgets
-from PySide2.QtCore import Signal, Slot, QObject, Qt, QUrl
+from PySide6 import QtWebEngineWidgets, QtWebChannel, QtWidgets
+from PySide6.QtCore import Signal, Slot, QObject, Qt, QUrl
 from bw2data.filesystem import safe_filename
 
 from . import webutils

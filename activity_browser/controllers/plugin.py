@@ -5,7 +5,7 @@ import traceback
 from pkgutil import iter_modules
 from shutil import rmtree
 
-from PySide2.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Slot
 
 from ..ui.wizards.plugins_manager_wizard import PluginsManagerWizard
 from ..signals import signals

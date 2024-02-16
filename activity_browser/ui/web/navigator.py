@@ -7,8 +7,8 @@ from typing import Optional
 
 import brightway2 as bw
 import networkx as nx
-from PySide2 import QtWidgets
-from PySide2.QtCore import Slot
+from PySide6 import QtWidgets
+from PySide6.QtCore import Slot
 
 from .base import BaseGraph, BaseNavigatorWidget
 from ...signals import signals

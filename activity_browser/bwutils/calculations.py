@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PySide2.QtWidgets import QMessageBox, QApplication
+from PySide6.QtWidgets import QMessageBox, QApplication
 
 from ..bwutils import (
     Contributions, MonteCarloLCA, MLCA,

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
 from bw2data.errors import ValidityError
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Signal, Slot
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Signal, Slot
 import bw2io.data as data
 from ...signals import signals
 

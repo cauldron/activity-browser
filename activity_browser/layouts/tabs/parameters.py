@@ -3,8 +3,8 @@ from pathlib import Path
 
 import brightway2 as bw
 import pandas as pd
-from PySide2.QtCore import Slot, QSize, Qt
-from PySide2.QtWidgets import (
+from PySide6.QtCore import Slot, QSize, Qt
+from PySide6.QtWidgets import (
     QCheckBox, QFileDialog, QHBoxLayout, QMessageBox, QPushButton, QToolBar,
     QStyle, QVBoxLayout, QTabWidget, QSplitter, QWidget, QAbstractButton
 )

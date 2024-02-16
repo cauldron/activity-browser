@@ -8,7 +8,7 @@ import pandas as pd
 from bw2data.parameters import (ActivityParameter, DatabaseParameter, Group,
                                 ProjectParameter)
 from peewee import DoesNotExist
-from PySide2.QtCore import Slot, QModelIndex
+from PySide6.QtCore import Slot, QModelIndex
 
 from activity_browser.bwutils import commontasks as bc, uncertainty as uc
 from activity_browser.signals import signals

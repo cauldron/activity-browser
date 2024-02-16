@@ -5,7 +5,7 @@ import brightway2 as bw
 from bw2data.backends.peewee import ActivityDataset
 import pandas as pd
 import numpy as np
-from PySide2.QtCore import QModelIndex, Slot, Qt
+from PySide6.QtCore import QModelIndex, Slot, Qt
 
 from activity_browser.bwutils import commontasks as bc
 from activity_browser.signals import signals

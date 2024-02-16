@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import Optional, Union
 
-from PySide2 import QtWidgets
-from PySide2.QtCore import Slot, Qt
+from PySide6 import QtWidgets
+from PySide6.QtCore import Slot, Qt
 from brightway2 import calculation_setups
 import pandas as pd
 import re

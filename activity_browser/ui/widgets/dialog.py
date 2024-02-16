@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import List, Tuple
 
 import brightway2 as bw
-from PySide2 import QtGui, QtWidgets
-from PySide2.QtCore import Qt, Signal, Slot
+from PySide6 import QtGui, QtWidgets
+from PySide6.QtCore import Qt, Signal, Slot
 
 from activity_browser.bwutils.superstructure import get_sheet_names
 from activity_browser.settings import project_settings

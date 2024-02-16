@@ -13,8 +13,8 @@ from bw2io import SingleOutputEcospold2Importer
 from bw2io.errors import InvalidPackage, StrategyError
 from bw2io.extractors import Ecospold2DataExtractor
 from bw2data.backends import SQLiteBackend
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtCore import Signal, Slot
+from PySide6 import QtWidgets, QtCore
+from PySide6.QtCore import Signal, Slot
 
 from ..threading import ABThread
 from ...bwutils.errors import ImportCanceledError, LinkingFailed

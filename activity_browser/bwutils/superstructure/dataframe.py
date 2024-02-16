@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import List, Tuple
-from PySide2.QtWidgets import QApplication, QPushButton
-from PySide2.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QPushButton
+from PySide6.QtCore import Qt
 import sys
 import ast
 

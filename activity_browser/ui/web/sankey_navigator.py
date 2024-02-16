@@ -5,9 +5,9 @@ import time
 from typing import List
 
 import brightway2 as bw
-from PySide2 import QtWidgets
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import QComboBox
+from PySide6 import QtWidgets
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QComboBox
 
 from .base import BaseGraph, BaseNavigatorWidget
 from ...bwutils.commontasks import identify_activity_type

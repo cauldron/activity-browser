@@ -3,10 +3,10 @@ import os
 from typing import Optional
 
 from bw2data.filesystem import safe_filename
-from PySide2.QtCore import QSize, Qt, Slot, QPoint, Signal, QRect, QTimer
-from PySide2.QtWidgets import QFileDialog, QTableView, QTreeView, QApplication, QMenu, QAction, \
+from PySide6.QtCore import QSize, Qt, Slot, QPoint, Signal, QRect, QTimer
+from PySide6.QtWidgets import QFileDialog, QTableView, QTreeView, QApplication, QMenu, \
     QHeaderView, QStyle, QStyleOptionButton,QLineEdit, QWidgetAction, QWidget, QHBoxLayout, QToolButton
-from PySide2.QtGui import QKeyEvent, QDoubleValidator
+from PySide6.QtGui import QKeyEvent, QDoubleValidator, QAction
 
 from ...settings import ab_settings
 from ..widgets.dialog import FilterManagerDialog, SimpleFilterDialog

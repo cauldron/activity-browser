@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Iterable, Optional, Union
-from PySide2.QtWidgets import QMessageBox, QApplication
+from PySide6.QtWidgets import QMessageBox, QApplication
 import numpy as np
 import pandas as pd
 import brightway2 as bw

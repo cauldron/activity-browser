@@ -2,8 +2,8 @@
 import brightway2 as bw
 from bw2data.backends.peewee import sqlite3_lci_db
 from bw2data.parameters import Group
-from PySide2 import QtWidgets
-from PySide2.QtCore import QObject, Slot, Qt
+from PySide6 import QtWidgets
+from PySide6.QtCore import QObject, Slot, Qt
 
 from ..bwutils import commontasks as bc
 from ..bwutils.strategies import relink_exchanges_existing_db

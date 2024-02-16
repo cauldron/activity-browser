@@ -8,7 +8,7 @@ from bw2data.parameters import (ProjectParameter, DatabaseParameter, Group,
 from bw2data.proxies import ExchangeProxyBase
 import pandas as pd
 from peewee import DoesNotExist
-from PySide2.QtCore import QModelIndex, Qt, Slot
+from PySide6.QtCore import QModelIndex, Qt, Slot
 
 from activity_browser.bwutils import (
     PedigreeMatrix, uncertainty as uc, commontasks as bc

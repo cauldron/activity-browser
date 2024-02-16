@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import QLabel, QStatusBar
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QLabel, QStatusBar
 
 import brightway2 as bw
 

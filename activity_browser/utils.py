@@ -2,7 +2,7 @@ from typing import Tuple, Iterable
 import requests
 from pathlib import Path
 import os
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 from bw2data.filesystem import safe_filename
 

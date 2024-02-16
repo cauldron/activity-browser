@@ -5,10 +5,10 @@ import datetime
 import arrow
 import numpy as np
 import pandas as pd
-from PySide2.QtCore import (
+from PySide6.QtCore import (
     QAbstractItemModel, QAbstractTableModel, QModelIndex, Qt, Signal, QSortFilterProxyModel
 )
-from PySide2.QtGui import QBrush
+from PySide6.QtGui import QBrush
 
 from activity_browser.bwutils import commontasks as bc
 from activity_browser.ui.style import style_item

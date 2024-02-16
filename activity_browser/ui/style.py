@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PySide2 import QtGui, QtWidgets
+from PySide6 import QtGui, QtWidgets
 
 default_font = QtGui.QFont('Arial', 8)
 

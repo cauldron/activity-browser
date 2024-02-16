@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
-from PySide2 import QtWidgets, QtCore
+from PySide6 import QtWidgets, QtCore
 from peewee import SqliteDatabase
 import os
 import re

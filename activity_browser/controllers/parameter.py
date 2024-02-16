@@ -3,8 +3,8 @@ from typing import List, Optional, Union
 
 import brightway2 as bw
 from bw2data.parameters import ActivityParameter, Group, ParameterBase
-from PySide2.QtCore import QObject, Slot
-from PySide2.QtWidgets import QInputDialog, QMessageBox, QErrorMessage
+from PySide6.QtCore import QObject, Slot
+from PySide6.QtWidgets import QInputDialog, QMessageBox, QErrorMessage
 
 from activity_browser.bwutils import commontasks as bc
 from activity_browser.signals import signals

@@ -9,14 +9,14 @@ import traceback
 from typing import List, Optional, Union
 import pandas as pd
 
-from PySide2.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget, QTabWidget, QVBoxLayout, QHBoxLayout, QScrollArea, QRadioButton,
     QLabel, QLineEdit, QCheckBox, QPushButton, QComboBox, QTableView,
     QButtonGroup, QMessageBox, QGroupBox, QGridLayout, QFileDialog,
     QButtonGroup, QMessageBox, QGroupBox, QGridLayout, QFileDialog,
     QApplication, QSizePolicy, QToolBar
 )
-from PySide2 import QtGui, QtCore
+from PySide6 import QtGui, QtCore
 from stats_arrays.errors import InvalidParamsError
 
 from ...bwutils import (

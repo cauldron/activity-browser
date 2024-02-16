@@ -2,8 +2,8 @@
 #from typing import Iterable, List, Tuple
 from typing import Iterable, Tuple
 
-from PySide2.QtCore import Slot
-#from PySide2.QtWidgets import QComboBox
+from PySide6.QtCore import Slot
+#from PySide6.QtWidgets import QComboBox
 
 from activity_browser.signals import signals
 from .models import ScenarioModel

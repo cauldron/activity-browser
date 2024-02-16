@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
 import traceback
-from PySide2.QtCore import QObject, Slot
-from PySide2 import QtWidgets
+from PySide6.QtCore import QObject, Slot
+from PySide6 import QtWidgets
 
 from activity_browser.bwutils import commontasks as bc
 from activity_browser.settings import ab_settings

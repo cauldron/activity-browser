@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
 import pandas as pd
-from PySide2.QtCore import Slot, QModelIndex
+from PySide6.QtCore import Slot, QModelIndex
 
 from activity_browser.bwutils import commontasks as bc
 from activity_browser.signals import signals

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 
 class CheckboxDelegate(QtWidgets.QStyledItemDelegate):
@@ -16,8 +16,6 @@ class CheckboxDelegate(QtWidgets.QStyledItemDelegate):
         https://stackoverflow.com/a/11778012
         https://stackoverflow.com/q/15235273
 
-        NOTE: PyQt 5.9.2 needs to treat OSX different from others.
-         PySide2 5.13.1 and higher no longer has this issue.
         """
         painter.save()
         value = bool(index.data(QtCore.Qt.DisplayRole))

@@ -1,6 +1,6 @@
 import pandas
-from PySide2 import QtCore, QtWidgets
-from PySide2.QtCore import Slot, Qt
+from PySide6 import QtCore, QtWidgets
+from PySide6.QtCore import Slot, Qt
 
 from ...ui.style import header
 from ...ui.tables import PluginsTable

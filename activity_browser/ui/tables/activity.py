@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from PySide2 import QtWidgets
-from PySide2.QtCore import Slot
+from PySide6 import QtWidgets
+from PySide6.QtCore import Slot
 
 from .delegates import *
 from .models import (

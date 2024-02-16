@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from typing import Iterable, Optional
-from PySide2.QtWidgets import QPushButton
+from PySide6.QtWidgets import QPushButton
 
 from bw2calc.matrices import TechnosphereBiosphereMatrixBuilder as MB
 import numpy as np

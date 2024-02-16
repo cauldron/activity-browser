@@ -10,14 +10,14 @@ from collections import namedtuple
 from typing import Union
 
 import numpy as np
-from PySide2 import QtCore
-from PySide2.QtCore import QLocale, Qt, Signal, Slot
-from PySide2.QtWidgets import (
+from PySide6 import QtCore
+from PySide6.QtCore import QLocale, Qt, Signal, Slot
+from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QRadioButton, QSlider, QLabel,
     QLineEdit, QPushButton, QButtonGroup
 )
 
-from PySide2.QtGui import QIntValidator, QDoubleValidator
+from PySide6.QtGui import QIntValidator, QDoubleValidator
 
 from ..style import vertical_line
 

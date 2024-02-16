@@ -1,5 +1,5 @@
 import brightway2 as bw
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 def test_new_calculation_setup(qtbot, ab_app, monkeypatch):
     assert bw.projects.current == 'pytest_project'

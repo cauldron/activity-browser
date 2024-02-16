@@ -6,8 +6,8 @@ import brightway2 as bw
 from bw2data.utils import natural_sort
 import numpy as np
 import pandas as pd
-from PySide2.QtCore import Qt, QModelIndex, Slot
-from PySide2.QtWidgets import QApplication
+from PySide6.QtCore import Qt, QModelIndex, Slot
+from PySide6.QtWidgets import QApplication
 
 from activity_browser.bwutils import AB_metadata, commontasks as bc
 from activity_browser.settings import project_settings

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import shutil
 from typing import Optional
-from PySide2.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 import appdirs
 import brightway2 as bw

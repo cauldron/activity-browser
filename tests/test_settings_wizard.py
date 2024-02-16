@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import brightway2 as bw
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QMessageBox, QWizard
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QMessageBox, QWizard
 
 from activity_browser.ui.wizards.settings_wizard import SettingsWizard
 from activity_browser.settings import ab_settings

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtCore import Slot
+from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6.QtCore import Slot
 
 from ...settings import project_settings
 from ...signals import signals
@@ -27,10 +27,10 @@ class DatabasesTable(ABDataFrameView):
             QtWidgets.QSizePolicy.Preferred,
             QtWidgets.QSizePolicy.Maximum
         ))
-        self.relink_action = QtWidgets.QAction(
+        self.relink_action = QtGui.QAction(
             qicons.edit, "Relink the database", None
         )
-        self.new_activity_action =QtWidgets.QAction(
+        self.new_activity_action = QtGui.QAction(
             qicons.add, "Add new activity", None
         )
         self.model = DatabasesModel(parent=self)

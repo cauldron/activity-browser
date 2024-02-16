@@ -4,7 +4,7 @@ Use the existing parameters to look at the uncertainty and edit it in
 multiple ways
 """
 import brightway2 as bw
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 import pytest
 from stats_arrays.distributions import UndefinedUncertainty, UniformUncertainty
 

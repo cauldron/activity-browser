@@ -3,8 +3,8 @@ import os
 import sys
 import traceback
 
-from PySide2.QtCore import QSysInfo, __version__ as qt_version
-from PySide2.QtWidgets import QApplication
+from PySide6.QtCore import QSysInfo, __version__ as qt_version
+from PySide6.QtWidgets import QApplication
 
 from .application import Application
 from .info import __version__

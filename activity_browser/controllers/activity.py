@@ -5,8 +5,8 @@ import uuid
 import brightway2 as bw
 import pandas as pd
 from bw2data.backends.peewee.proxies import Activity, ExchangeProxyBase
-from PySide2.QtCore import QObject, Slot, Qt
-from PySide2 import QtWidgets
+from PySide6.QtCore import QObject, Slot, Qt
+from PySide6 import QtWidgets
 
 from activity_browser.bwutils import AB_metadata, commontasks as bc
 from activity_browser.bwutils.strategies import relink_activity_exchanges
