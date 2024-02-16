@@ -19,8 +19,7 @@ log = ABHandler.setup_with_logger(logger, __name__)
 class CSList(QtWidgets.QComboBox):
     def __init__(self, parent=None):
         super(CSList, self).__init__(parent)
-        # Runs even if selection doesn't change
-        self.activated['QString'].connect(self.set_cs)
+        self.activated.connect(self.set_cs)
         signals.calculation_setup_selected.connect(self.sync)
 
     def sync(self, name):
@@ -31,9 +30,8 @@ class CSList(QtWidgets.QComboBox):
         self.blockSignals(False)
         self.setCurrentIndex(keys.index(name))
 
-    @staticmethod
-    def set_cs(name: str):
-        signals.calculation_setup_selected.emit(name)
+    def set_cs(self, index: int):
+        signals.calculation_setup_selected.emit(self.itemText(index))
 
     @property
     def name(self) -> str:
