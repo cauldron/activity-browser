@@ -26,7 +26,7 @@ requirements:
   run:
     - python >=3.8,<3.12
     - arrow
-    - brightway2 =2.4.4
+    - brightway2 =2.4.5
     - eidl >=2.0.1
     - libxml2 <=2.10.4
     - networkx
@@ -34,7 +34,7 @@ requirements:
     - pandas <=2.1.4
     - pint <=0.21
     - pyperclip
-    - pyside6 ==6.6.1
+    - pyside6
     - qt-webengine
     - salib >=1.4
     - seaborn
