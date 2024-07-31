@@ -2,6 +2,7 @@
 import sys
 
 from .logger import log, exception_hook, log_file_location
+from .plugin import Plugin
 from .mod import bw2data
 from .application import application
 from .signals import signals
@@ -9,7 +10,6 @@ from .settings import ab_settings, project_settings
 from .controllers import *
 from .info import __version__ as version
 from .layouts.main import MainWindow
-from .plugin import Plugin
 
 def load_settings() -> None:
     if ab_settings.settings:
