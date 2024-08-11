@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import importlib
+import multiprocessing
 import os
 import sys
 
@@ -87,6 +88,7 @@ def show_splash_screen():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     # Useful if you want to run some interactive commands using the built
     # binary and test out dependencies to ensure that they work properly.
     # import code
