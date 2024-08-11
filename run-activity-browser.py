@@ -87,4 +87,9 @@ def show_splash_screen():
 
 
 if __name__ == "__main__":
+    # Useful if you want to run some interactive commands using the built
+    # binary and test out dependencies to ensure that they work properly.
+    # import code
+    # code.interact()
+
     show_splash_screen()
