@@ -14,7 +14,7 @@ from typing import TextIO, Type
 import platformdirs
 
 BUNDLED = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
-WHITELIST = ["activity_browser", "brightway2", "bw2data", "bw2io", "C/C++"]
+WHITELIST = ["activity_browser", "ab_plugin", "brightway2", "bw2data", "bw2io", "C/C++"]
 EXTENDED_CONSOLE = os.environ.get("AB_EXTENDED_CONSOLE", False)
 SIMPLE_CONSOLE = os.environ.get("AB_SIMPLE_CONSOLE", False)
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
