@@ -10,6 +10,7 @@ from PySide2.QtCore import Slot
 
 from activity_browser import log, signals
 from activity_browser.mod.bw2data import Database, get_activity
+from activity_browser.utils import STATIC_DIR
 
 from ...bwutils.commontasks import identify_activity_type
 from .base import BaseGraph, BaseNavigatorWidget
@@ -50,9 +51,7 @@ class GraphNavigatorWidget(BaseNavigatorWidget):
     NAVIGATION MODE:
     Click on activities to jump to specific activities (instead of expanding the graph).
     """
-    HTML_FILE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), "../../static/navigator.html"
-    )
+    HTML_FILE = STATIC_DIR.joinpath("navigator.html")
 
     def __init__(self, parent=None, key=None):
         super().__init__(parent, css_file="navigator.css")

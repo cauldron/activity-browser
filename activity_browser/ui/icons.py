@@ -3,12 +3,12 @@ from pathlib import Path
 
 from PySide2.QtGui import QIcon
 
-PACKAGE_DIR = Path(__file__).resolve().parents[1]
+from activity_browser.utils import STATIC_DIR
 
 
 def create_path(folder: str, filename: str) -> str:
     """Builds a path to the image file."""
-    return str(PACKAGE_DIR.joinpath("static", "icons", folder, filename))
+    return str(STATIC_DIR.joinpath("icons", folder, filename))
 
 
 # CURRENTLY UNUSED ICONS

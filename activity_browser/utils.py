@@ -1,4 +1,6 @@
+import importlib
 import os
+import importlib.resources
 from pathlib import Path
 from typing import Iterable, Tuple
 
@@ -6,13 +8,17 @@ import requests
 from bw_processing import safe_filename
 from PySide2 import QtWidgets
 
+import activity_browser
 from activity_browser.mod import bw2data as bd
 
 from .settings import ab_settings
 
+STATIC_DIR = importlib.resources.files(activity_browser) / "static"
 
-def get_base_path() -> Path:
-    return Path(__file__).resolve().parents[0]
+
+def get_package_dir() -> Path:
+    """Return activity_browser package path"""
+    return Path(importlib.util.find_spec("activity_browser").origin).parent
 
 
 def read_file_text(file_dir: str) -> str:

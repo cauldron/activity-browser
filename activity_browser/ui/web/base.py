@@ -38,7 +38,7 @@ class BaseNavigatorWidget(QtWidgets.QWidget):
         self.view.loadFinished.connect(self.load_finished_handler)
         self.view.setContextMenuPolicy(Qt.PreventContextMenu)
         self.view.page().setWebChannel(self.channel)
-        self.url = QUrl.fromLocalFile(self.HTML_FILE)
+        self.url = QUrl.fromLocalFile(str(self.HTML_FILE))
         self.css_file = css_file
 
         # Various Qt objects

@@ -17,6 +17,7 @@ from PySide2.QtWidgets import QComboBox
 from activity_browser import log, signals
 from activity_browser.mod import bw2data as bd
 from activity_browser.mod.bw2data.backends import ActivityDataset
+from activity_browser.utils import STATIC_DIR
 
 from ...bwutils.commontasks import identify_activity_type
 from ...bwutils.superstructure.graph_traversal_with_scenario import (
@@ -45,9 +46,7 @@ class SankeyNavigatorWidget(BaseNavigatorWidget):
     Green flows: Avoided impacts
 
     """
-    HTML_FILE = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), "../../static/sankey_navigator.html"
-    )
+    HTML_FILE = STATIC_DIR.joinpath("sankey_navigator.html")
 
     def __init__(self, cs_name, parent=None):
         super().__init__(parent, css_file="sankey_navigator.css")

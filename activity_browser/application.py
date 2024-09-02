@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
+from PySide2 import QtWidgets
 from PySide2.QtCore import QCoreApplication, QObject, QSysInfo, Qt
 from PySide2.QtWidgets import QApplication
 
@@ -51,6 +52,8 @@ if QSysInfo.productType() in ["arch", "nixos"]:
     os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--no-sandbox"
     log.info("Info: QtWebEngine sandbox disabled")
 
-QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
-
-application = ABApplication()
+if not QtWidgets.QApplication.instance():
+    QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
+    application = ABApplication()
+else:
+    application: ABApplication = QtWidgets.QApplication.instance()

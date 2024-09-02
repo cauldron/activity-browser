@@ -4,6 +4,7 @@ from PySide2.QtWidgets import QVBoxLayout
 
 from activity_browser import log, signals
 from activity_browser.mod import bw2data as bd
+from activity_browser.utils import STATIC_DIR
 
 from ...bwutils.commontasks import get_activity_name
 from ...ui.web import GraphNavigatorWidget, RestrictedWebViewWidget
@@ -22,8 +23,7 @@ class RightPanel(ABTab):
 
     def __init__(self, *args):
         super(RightPanel, self).__init__(*args)
-        package_dir = Path(__file__).resolve().parents[2]
-        html_file = str(package_dir.joinpath("static", "startscreen", "welcome.html"))
+        html_file = str(STATIC_DIR.joinpath("startscreen", "welcome.html"))
         self.tabs = {
             "Welcome": RestrictedWebViewWidget(html_file=html_file),
             "Characterization Factors": CharacterizationFactorsTab(self),

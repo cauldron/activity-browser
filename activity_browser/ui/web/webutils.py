@@ -4,7 +4,7 @@ import os
 from PySide2 import QtCore, QtGui, QtWebEngineWidgets, QtWidgets
 
 # type "localhost:3999" in Chrome for DevTools of AB web content
-from activity_browser.utils import get_base_path
+from activity_browser.utils import STATIC_DIR
 
 os.environ["QTWEBENGINE_REMOTE_DEBUGGING"] = "3999"
 
@@ -56,8 +56,8 @@ class RestrictedWebViewWidget(QtWidgets.QWidget):
 
 
 def get_static_js_path(file_name: str = "") -> str:
-    return str(get_base_path().joinpath("static", "javascript", file_name))
+    return str(STATIC_DIR.joinpath("javascript", file_name))
 
 
 def get_static_css_path(file_name: str = "") -> str:
-    return str(get_base_path().joinpath("static", "css", file_name))
+    return str(STATIC_DIR.joinpath("css", file_name))

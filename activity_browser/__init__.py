@@ -11,6 +11,7 @@ from .layouts.main import MainWindow
 from .plugin import Plugin
 from .controllers import *
 
+
 def load_settings() -> None:
     if ab_settings.settings:
         bw2data.projects.switch_dir(ab_settings.current_bw_dir)
@@ -19,7 +20,7 @@ def load_settings() -> None:
     log.info(f"Brightway2 current project: {bw2data.projects.current}")
 
 
-def run_activity_browser():
+def run_activity_browser(splash=None):
     log.info(f"Activity Browser version: {version}")
     if log_file_location:
         log.info(f"The log file can be found at {log_file_location}")
@@ -27,6 +28,8 @@ def run_activity_browser():
     application.main_window = MainWindow(application)
     load_settings()
     application.show()
+    if splash:
+        splash.finish(application.main_window)
 
     sys.excepthook = exception_hook
 

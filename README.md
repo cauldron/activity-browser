@@ -235,3 +235,12 @@ If you experience problems or are suffering from a specific bug, please [raise a
 
 # License
 You can find the license information for Activity Browser in the [license file](https://github.com/LCA-ActivityBrowser/activity-browser/blob/main/LICENSE.txt).
+
+
+# Build
+
+```bash
+pip install third-party-license-file-generator
+pip freeze > requirements.txt
+python -m third_party_license_file_generator -r requirements.txt -p .venv/bin/python -c -g
+```
