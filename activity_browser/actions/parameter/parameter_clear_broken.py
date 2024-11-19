@@ -27,9 +27,11 @@ class ParameterClearBroken(ABAction):
 
         # I'm not sure this is right, because you're removing all the exchanges from the group...
         parameters.remove_exchanges_from_group(group, None, False)
-        ActivityParameter.delete().where(
+        # Compatible with bw2data events
+        for ap in ActivityParameter.select().where(
             (ActivityParameter.database == db) & (ActivityParameter.code == code)
-        ).execute()
+        ):
+            ap.delete_instance()
 
         # Also clear Group if it is not in use anymore
         if (
@@ -37,5 +39,6 @@ class ParameterClearBroken(ABAction):
             .where(ActivityParameter.group == parameter.group)
             .exists()
         ):
-            Group.delete().where(Group.name == group).execute()
+            for obj in Group.select().where(Group.name == group):
+                obj.delete_instance()
             GroupDependency.delete().where(GroupDependency.group == group).execute()

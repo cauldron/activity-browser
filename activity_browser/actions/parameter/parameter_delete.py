@@ -47,7 +47,8 @@ class ParameterDelete(ABAction):
                     .where(ActivityParameter.group == group)
                     .exists()
                 ):
-                    Group.delete().where(Group.name == group).execute()
+                    for obj in Group.select().where(Group.name == group):
+                        obj.delete()
                     GroupDependency.delete().where(
                         GroupDependency.group == group
                     ).execute()

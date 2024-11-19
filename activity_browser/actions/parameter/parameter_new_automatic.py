@@ -37,7 +37,7 @@ class ParameterNewAutomatic(ABAction):
                 )
                 return
 
-            group = act._document.id
+            group = str(act._document.id)
             count = (
                 ActivityParameter.select()
                 .where(ActivityParameter.group == group)

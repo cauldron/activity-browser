@@ -64,7 +64,9 @@ class DatabaseDelete(ABAction):
         del bd.databases[db_name]
 
         # delete database parameters
-        Group.delete().where(Group.name == db_name).execute()
+        # Use delete_instance to get bw2data event
+        for obj in Group.select().where(Group.name == db_name):
+            obj.delete_instance()
 
         # remove database from project settings
         project_settings.remove_db(db_name)
