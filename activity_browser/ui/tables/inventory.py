@@ -49,6 +49,9 @@ class DatabasesTable(ABDataFrameView):
         self.re_allocate_action = actions.DatabaseRedoAllocation.get_QAction(
             self.current_database
         )
+        self.set_db_multifunctional_action = actions.DatabaseSetMultifunctional.get_QAction(
+            self.current_database
+        )
 
         self.model = DatabasesModel(parent=self)
         self.model.set_builtin_checkbox_delegate(2, False, True, False)
@@ -77,11 +80,14 @@ class DatabasesTable(ABDataFrameView):
         menu.addAction(self.new_product_action)
         if databases[self.current_database()].get("backend") == "multifunctional":
             menu.addAction(self.re_allocate_action)
+        else:
+            menu.addAction(self.set_db_multifunctional_action)
         proxy = self.indexAt(event.pos())
         if proxy.isValid():
             db_name = self.model.get_db_name(proxy)
             db_read_only = project_settings.db_is_readonly(db_name)
             self.relink_action.setEnabled(not db_read_only)
+            self.set_db_multifunctional_action.setEnabled(not db_read_only)
             self.re_allocate_action.setEnabled(not db_read_only)
             self.new_process_action.setEnabled(not db_read_only)
             self.new_product_action.setEnabled(not db_read_only)
