@@ -39,7 +39,10 @@ class ExchangeModify(ABAction):
         exchange.save()
         if "functional" in data or exchange.output.get("type") == "multifunctional":
             if hasattr(exchange.output, "allocate"):
-                exchange.output.allocate()
+                try:
+                    exchange.output.allocate()
+                except KeyError as error:
+                    log.debug(f"Allocation failed due to missing property: {error}")
             exchange.output.save()
 
         if "formula" in data:
